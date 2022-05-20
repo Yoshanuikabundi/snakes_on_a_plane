@@ -25,7 +25,7 @@ def update(
     ),
 ):
     """
-    Update all environments in pyproject.toml
+    Update all environments in soap.toml
     """
     cfg = soap.get_cfg()
     if env is not None:
