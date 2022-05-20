@@ -18,13 +18,21 @@ def main():
 
 
 @main.command()
-def update():
+def update(
+    env: str = Option(
+        ...,
+        help="Environment to update. If not specified, all environments will be updated.",
+    ),
+):
     """
     Update all environments in pyproject.toml
     """
     cfg = soap.get_cfg()
-    for env in cfg["envs"]:
-        soap.prepare_env(env, cfg)
+    if env is not None:
+        soap.prepare_env(env, cfg, ignore_cache=True)
+    else:
+        for env in cfg["envs"]:
+            soap.prepare_env(env, cfg, ignore_cache=True)
 
 
 @main.command()

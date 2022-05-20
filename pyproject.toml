@@ -1,2 +1,0 @@
-[tool.soap.envs]
-dev = "devtools/conda-envs/full_env.yml"

@@ -1,4 +1,4 @@
-name: test
+name: docs
 channels:
 
   - conda-forge
@@ -14,12 +14,5 @@ dependencies:
   - toml
   - typer
 
-    # Testing
-  - pytest
-  - pytest-cov
-  - codecov
-
-    # Pip-only installs
-  #- pip:
-  #  - codecov
-
+  # Docs depends
+  - sphinx >=5.0,<6.0

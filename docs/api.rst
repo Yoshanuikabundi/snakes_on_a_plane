@@ -2,6 +2,7 @@ API Documentation
 =================
 
 .. autosummary::
-   :toctree: autosummary
+   :toctree: api/generated
+   :recursive:
 
-   snakes_on_a_plane.canvas
+   soap

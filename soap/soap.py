@@ -20,12 +20,16 @@ def get_cfg() -> Mapping[str, Any]:
     return cfg
 
 
-def prepare_env(env: str, cfg: Mapping[str, Any]):
+def prepare_env(env: str, cfg: Mapping[str, Any], ignore_cache=False):
     path_yml = Path(cfg["envs"][env])
     path_env = Path(cfg["env_path"] / env)
     # Cache the environment file and only construct the environment if it has changed
     path_cached_yml = path_env / path_yml.name
-    if (not path_cached_yml.exists()) or (not filecmp.cmp(path_cached_yml, path_yml)):
+    if (
+        ignore_cache
+        or (not path_cached_yml.exists())
+        or (not filecmp.cmp(path_cached_yml, path_yml))
+    ):
         soap.conda.env_from_file(path_yml, path_env, install_current=True)
         shutil.copy2(path_yml, path_env)
 
