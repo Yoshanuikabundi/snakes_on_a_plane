@@ -1,0 +1,25 @@
+name: test
+channels:
+
+  - conda-forge
+
+  - defaults
+dependencies:
+  # Base depends
+  - python=3.8
+  - pip
+
+  # Imports
+  - gitpython
+  - toml
+  - typer
+
+  # Testing
+  - pytest
+  - pytest-cov
+  - codecov
+
+  # # Pip-only installs
+  # - pip:
+  #   - codecov
+
