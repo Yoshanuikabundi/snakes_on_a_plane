@@ -1,0 +1,4 @@
+[envs]
+dev = "devtools/conda-envs/test_env.yml"
+user = "devtools/conda-envs/user_env.yml"
+user = "devtools/conda-envs/docs_env.yml"
