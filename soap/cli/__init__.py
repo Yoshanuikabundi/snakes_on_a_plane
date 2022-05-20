@@ -1,6 +1,6 @@
 import typer
-from typer import echo, Argument, Option
-from typing import Callable, List
+from typer import Argument, Option
+from typing import Callable
 
 import soap
 
