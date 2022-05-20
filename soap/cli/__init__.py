@@ -46,10 +46,5 @@ def run(
     soap.run_in_env(args.split(), env, cfg)
 
 
-@main.command()
-def list(args: List[str]):
-    echo(args)
-
-
 if __name__ == "__main__":
     main()
