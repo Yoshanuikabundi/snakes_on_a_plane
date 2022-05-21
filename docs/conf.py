@@ -53,12 +53,74 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
     "sphinx.ext.extlinks",
+    "sphinx.ext.doctest",
+    "myst_parser",
+    "sphinx_click",
 ]
 
+
 autosummary_generate = True
-napoleon_google_docstring = False
+autosummary_imported_members = True
+autosummary_ignore_module_all = False
+autosummary_context = {
+    # Modules to exclude from API docs
+    "exclude_modules": [
+        "soap.tests",
+        "soap.soap",
+        "soap.cli",
+    ]
+}
+
+autodoc_default_options = {
+    "member-order": "alphabetical",
+    "show-inheritance": True,
+}
+autodoc_preserve_defaults = True
+autodoc_inherit_docstrings = False
+autodoc_typehints_format = "short"
+# Fold the __init__ or __new__ methods into class documentation
+autoclass_content = "both"
+autodoc_class_signature = "mixed"
+# Workaround for autodoc_typehints_format not working for attributes
+# see https://github.com/sphinx-doc/sphinx/issues/10290#issuecomment-1079740009
+python_use_unqualified_type_names = True
+
+napoleon_google_docstring = True
 napoleon_use_param = False
 napoleon_use_ivar = True
+
+myst_enable_extensions = [
+    "deflist",
+    "smartquotes",
+    "replacements",
+    "dollarmath",
+    "colon_fence",
+]
+
+# sphinx-notfound-page
+# https://github.com/readthedocs/sphinx-notfound-page
+# Renders a 404 page with absolute links
+from importlib.util import find_spec as find_import_spec
+
+if find_import_spec("notfound"):
+    extensions.append("notfound.extension")
+
+    notfound_urls_prefix = "/en/latest/"
+    notfound_context = {
+        "title": "404: File Not Found",
+        "body": f"""
+    <h1>404: File Not Found</h1>
+    <p>
+        Sorry, we couldn't find that page. This often happens as a result of
+        following an outdated link. Please check the
+        <a href="{notfound_urls_prefix}">latest development version</a>
+        of the docs, unless you're sure you want an earlier version, and
+        try using the search box or the navigation menu on the left.
+    </p>
+    <p>
+    </p>
+    """,
+    }
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

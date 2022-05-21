@@ -101,5 +101,7 @@ def run(
     soap.run_in_env(shlex.split(args), this_env)
 
 
+_click = typer.main.get_command(app)
+
 if __name__ == "__main__":
     main()

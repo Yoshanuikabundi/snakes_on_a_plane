@@ -17,3 +17,6 @@ dependencies:
   # Docs depends
   - sphinx >=4.5,<5.0
   - sphinx_rtd_theme
+  - myst-parser>=0.13.6
+  - sphinx-notfound-page
+  - sphinx-click
