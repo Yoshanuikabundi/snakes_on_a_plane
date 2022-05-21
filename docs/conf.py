@@ -66,8 +66,6 @@ autosummary_context = {
     # Modules to exclude from API docs
     "exclude_modules": [
         "soap.tests",
-        "soap.soap",
-        "soap.cli",
     ]
 }
 
