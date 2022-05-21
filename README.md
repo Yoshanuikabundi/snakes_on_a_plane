@@ -3,6 +3,7 @@ Snakes on a Plane
 [//]: # (Badges)
 [![GitHub Actions Build Status](https://github.com/yoshanuikabundi/snakes_on_a_plane/workflows/CI/badge.svg)](https://github.com/yoshanuikabundi/snakes_on_a_plane/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/yoshanuikabundi/snakes_on_a_plane/branch/main/graph/badge.svg)](https://codecov.io/gh/yoshanuikabundi/snakes_on_a_plane/branch/main)
+[![Documentation Status](https://readthedocs.org/projects/snakesonaplane/badge/?version=latest)](https://snakesonaplane.readthedocs.io/en/latest/?badge=latest)
 
 [Conda] meets [Cargo]. SOAP lets you easily maintain Conda environments for individual projects.
 

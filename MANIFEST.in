@@ -3,5 +3,5 @@ include MANIFEST.in
 include CODE_OF_CONDUCT.md
 include versioneer.py
 
-graft snakes_on_a_plane
+graft soap
 global-exclude *.py[cod] __pycache__ *.so

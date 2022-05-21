@@ -1,5 +1,5 @@
 """
-Unit and regression test for the snakes_on_a_plane package.
+Unit and regression test for the soap package.
 """
 
 # Import package, test suite, and other packages as needed
@@ -7,9 +7,9 @@ import sys
 
 import pytest
 
-import snakes_on_a_plane
+import soap
 
 
-def test_snakes_on_a_plane_imported():
+def test_soap_imported():
     """Sample test, will always pass so long as import statement worked."""
-    assert "snakes_on_a_plane" in sys.modules
+    assert "soap" in sys.modules
