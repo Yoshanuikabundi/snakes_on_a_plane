@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Optional
 import os
 
 import typer
@@ -51,14 +51,14 @@ def main():
     try:
         app()
     except Exception as err:
-        echo("\033[31mError:")
+        echo("\033[31mError:\u001b[0m")
         raise SystemExit(err)
 
 
 @app.command()
 def update(
-    env: str = Option(
-        ...,
+    env: Optional[str] = Option(
+        None,
         help="Environment to update. If not specified, all environments will be updated.",
     ),
 ):
@@ -66,11 +66,17 @@ def update(
     Update all environments in soap.toml
     """
     cfg = soap.Config()
-    if env is not None:
-        soap.prepare_env(cfg.envs[env], ignore_cache=True)
-    else:
-        for this_env in cfg.envs.values():
-            soap.prepare_env(this_env, ignore_cache=True)
+    envs = cfg.envs.values() if env is None else [cfg.envs[env]]
+    echo(
+        f"\u001b[36mUpdating {len(envs)} environment{'s' if len(envs) != 1 else ''}\u001b[0m"
+    )
+    for this_env in envs:
+        echo(
+            f"\n\u001b[36mPreparing environment '{this_env.name}' "
+            f"from '{this_env.yml_path}' "
+            f"in '{this_env.env_path}':\u001b[0m"
+        )
+        soap.prepare_env(this_env, ignore_cache=True)
 
 
 @app.command()
