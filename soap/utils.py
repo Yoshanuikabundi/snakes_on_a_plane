@@ -4,6 +4,8 @@ from git.repo import Repo
 from pathlib import Path
 from typing import Union
 
+__all__ = ["get_git_root"]
+
 
 def get_git_root(path: Union[str, Path]) -> Path:
     """Get root path of the Git repository containing the path provided.

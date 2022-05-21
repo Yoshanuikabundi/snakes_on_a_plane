@@ -48,7 +48,7 @@ setup(
     # zip_safe=False,
     entry_points={
         "console_scripts": [
-            "soap = soap.cli:main",
+            "soap = soap._cli:main",
         ]
     },
 )

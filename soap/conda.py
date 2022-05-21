@@ -7,6 +7,8 @@ from shutil import which
 import subprocess as sp
 from soap.utils import get_git_root
 
+__all__ = ["conda", "env_from_file", "run_in_env"]
+
 
 def conda(
     args: Sequence[str],

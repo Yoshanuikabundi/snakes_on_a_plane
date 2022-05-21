@@ -1,5 +1,5 @@
-Snakes on a Plane
-=================
+# Snakes on a Plane
+
 [//]: # (Badges)
 [![GitHub Actions Build Status](https://github.com/yoshanuikabundi/snakes_on_a_plane/workflows/CI/badge.svg)](https://github.com/yoshanuikabundi/snakes_on_a_plane/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/yoshanuikabundi/snakes_on_a_plane/branch/main/graph/badge.svg)](https://codecov.io/gh/yoshanuikabundi/snakes_on_a_plane/branch/main)
@@ -62,12 +62,12 @@ SOAP will always check that the environment is correct before running aliases, j
 [Conda]: https://conda.io
 [Cargo]: https://doc.rust-lang.org/cargo/
 
-### Copyright
+## Copyright
 
 Copyright (c) 2021, Josh Mitchell (Yoshanuikabundi)
 
 
-#### Acknowledgements
+## Acknowledgements
  
 Project based on the 
 [Computational Molecular Science Python Cookiecutter](https://github.com/molssi/cookiecutter-cms) version 1.6.
