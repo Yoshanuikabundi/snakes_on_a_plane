@@ -2,7 +2,7 @@ from os import environ
 from pathlib import Path
 from typing import Sequence, Dict, Optional, Union
 from shutil import which
-from subprocess import run
+import subprocess as sp
 from soap.utils import get_git_root
 
 
@@ -44,7 +44,7 @@ def conda(
             env["MAMBA_NO_BANNER"] = "1"
         else:
             cmd = "conda"
-    return run([cmd, *args], check=True, text=True, input=stdin, env=env)
+    return sp.run([cmd, *args], check=True, text=True, input=stdin, env=env)
 
 
 def env_from_file(
