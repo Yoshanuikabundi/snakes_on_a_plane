@@ -1,5 +1,6 @@
 from typing import Callable, Optional
 import os
+import shlex
 
 import typer
 from typer import Argument, Option, Typer, echo
@@ -42,11 +43,13 @@ def main():
         def _(
             env: str = Option(
                 alias.default_env, help="Environment in which to run the command"
-            )
+            ),
+            chdir=Option(alias.chdir, hidden=True),
+            command=Option(alias.command, hidden=True),
         ):
-            if alias.chdir:
+            if chdir:
                 os.chdir(get_git_root("."))
-            run(args=alias.command, env=env)
+            run(args=command, env=env)
 
     try:
         app()
@@ -73,8 +76,8 @@ def update(
     for this_env in envs:
         echo(
             f"\n\u001b[36mPreparing environment '{this_env.name}' "
-            f"from '{this_env.yml_path}' "
-            f"in '{this_env.env_path}':\u001b[0m"
+            + f"from '{this_env.yml_path}' "
+            + f"in '{this_env.env_path}':\u001b[0m"
         )
         soap.prepare_env(this_env, ignore_cache=True)
 
@@ -88,7 +91,7 @@ def run(
     cfg = soap.Config()
     this_env = cfg.envs[env]
     soap.prepare_env(this_env)
-    soap.run_in_env(args.split(), this_env)
+    soap.run_in_env(shlex.split(args), this_env)
 
 
 if __name__ == "__main__":

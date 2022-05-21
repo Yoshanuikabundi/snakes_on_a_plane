@@ -35,7 +35,10 @@ class Config:
 
 class Env:
     def __init__(
-        self, name: str, value: Union[str, Mapping[str, Any]], base_env_path: Path
+        self,
+        name: str,
+        value: Union[str, Mapping[str, Any]],
+        base_env_path: Path,
     ):
         self.name: str = name
 
@@ -48,6 +51,9 @@ class Env:
             raise ConfigError(f"Value 'yml_path' missing from environment '{name}'")
 
         self.env_path = Path(value.get("env_path", base_env_path / name))
+
+    def __repr__(self):
+        return f"Env(name={self.name!r}, value={{yml_path: {self.yml_path!r}, env_path: {self.env_path!r}}})"
 
 
 class Alias:
@@ -65,3 +71,6 @@ class Alias:
         self.chdir = value.get("chdir", False)
         self.default_env = value.get("env", "dev")
         self.description = value.get("description", None)
+
+    def __repr__(self):
+        return f"Alias(name={self.name!r}, value={{cmd: {self.command!r}, chdir: {self.chdir!r}, env: {self.default_env!r}, description: {self.description!r}}})"
