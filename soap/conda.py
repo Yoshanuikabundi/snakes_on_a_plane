@@ -1,3 +1,5 @@
+"""Functions for running Conda and Mamba"""
+
 from os import environ
 from pathlib import Path
 from typing import Sequence, Dict, Optional, Union
@@ -13,7 +15,8 @@ def conda(
     env: Optional[Dict[str, str]] = None,
     cmd: Optional[str] = None
 ):
-    """Call conda or mamba with the specified arguments
+    """
+    Call conda or mamba with the specified arguments
 
     Parameters
     ==========
@@ -48,8 +51,24 @@ def conda(
 
 
 def env_from_file(
-    file: Union[str, Path], env_path: Union[str, Path], install_current=False
+    file: Union[str, Path],
+    env_path: Union[str, Path],
+    install_current=False,
 ):
+    """
+    Create or update an enviroment from a Conda environment YAML file
+
+    Parameters
+    ==========
+
+    file
+        Path to the Conda environment YAML file
+    env_path
+        Path to the prefix to create or update the Conda environment
+    install_current
+        If ``True``, the root directory of the current Git repository will be
+        installed in dev mode with `pip install -e`
+    """
     if Path(env_path).exists():
         conda(
             [
@@ -87,6 +106,17 @@ def env_from_file(
 
 
 def run_in_env(args: Sequence[str], env_path: Union[str, Path]):
+    """
+    Run a command in the specified environment prefix
+
+    Parameters
+    ==========
+
+    args
+        The command to run.
+    env_path
+        The path to the prefix of the environment.
+    """
     conda(
         [
             "run",

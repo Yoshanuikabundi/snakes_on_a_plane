@@ -1,4 +1,4 @@
-"""Conda meets Cargo"""
+"""Snakes on a Plane: Conda meets Cargo"""
 
 # Add imports here
 from soap.soap import prepare_env, run_in_env

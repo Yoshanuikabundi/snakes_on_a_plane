@@ -1,3 +1,5 @@
+"""Command Line Interface for Snakes on a Plane"""
+
 from typing import Callable, Optional
 import os
 import shlex
@@ -10,10 +12,12 @@ from soap.utils import get_git_root
 
 
 def callback(func: Callable) -> Typer:
+    """Decorator to define a Typer with callback"""
     return Typer(callback=func)
 
 
 def version_callback(version: bool):
+    """Callback for the --version switch"""
     if version:
         echo(f"Snakes On A Plane {soap.__version__}")
         raise typer.Exit()
@@ -36,6 +40,9 @@ def app(
 
 
 def main():
+    """Entry point for Snakes on a Plane.
+
+    Generates commands for aliases and catches and simplifies errors."""
     cfg = soap.Config()
     for alias in cfg.aliases:
 
@@ -66,7 +73,7 @@ def update(
     ),
 ):
     """
-    Update all environments in soap.toml
+    Update Conda environments.
     """
     cfg = soap.Config()
     envs = cfg.envs.values() if env is None else [cfg.envs[env]]
