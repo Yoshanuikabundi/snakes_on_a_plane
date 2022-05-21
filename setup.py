@@ -19,7 +19,7 @@ setup(
     # Self-descriptive entries which should always be present
     name="soap",
     author="Josh Mitchell (Yoshanuikabundi)",
-    author_email="josh.mitchell.au@gmail.com",
+    author_email="joshua.mitchell.au@gmail.com",
     description=short_description,
     long_description=long_description,
     long_description_content_type="text/markdown",
