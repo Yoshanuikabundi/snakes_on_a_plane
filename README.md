@@ -26,6 +26,37 @@ SOAP will check that the environment matches the specification with every call, 
 ```shell
 soap update
 ```
+
+You can also define your own aliases for commands. For simple commands, define the command as a value in the `aliases` table:
+
+```toml
+[aliases]
+greet = "echo 'hello world'"
+```
+
+To configure an alias, define a table instead of a string:
+
+```toml
+[aliases.docs]
+cmd = "sphinx-build -j auto docs docs/_build/html"
+chdir = true # Run the command in the git repository root directory
+env = "docs" # Use the docs environment by default
+description = "Build the docs with Sphinx" # Description for --help
+```
+
+In either case, the alias becomes a sub-command:
+
+```shell
+soap greet
+```
+
+The environment used by an alias can be defined in the TOML file, but it can also be overridden on the command line:
+
+```shell
+soap docs --env user
+```
+
+SOAP will always check that the environment is correct before running aliases, just like for `soap run`!
  
 [Conda]: https://conda.io
 [Cargo]: https://doc.rust-lang.org/cargo/
