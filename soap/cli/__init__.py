@@ -1,23 +1,67 @@
+from typing import Callable, Mapping
+import os
+
 import typer
-from typer import Argument, Option
-from typing import Callable
+from typer import Argument, Option, Typer, echo
 
 import soap
+from soap.utils import get_git_root
 
 
-def callback(func: Callable) -> typer.Typer:
-    return typer.Typer(callback=func)
+def callback(func: Callable) -> Typer:
+    return Typer(callback=func)
+
+
+def version_callback(version: bool):
+    if version:
+        echo(f"Snakes On A Plane {soap.__version__}")
+        raise typer.Exit()
 
 
 @callback
-def main():
+def app(
+    version: bool = Option(
+        False,
+        "--version",
+        is_eager=True,
+        help="Show version and exit.",
+        callback=version_callback,
+    )
+):
     """
     Snakes on a Plane: Cargo for Conda.
     """
     pass
 
 
-@main.command()
+def main():
+    cfg = soap.get_cfg()
+    for alias, inner in cfg["aliases"].items():
+        if isinstance(inner, str):
+            inner = {"cmd": inner}
+        command = inner["cmd"]
+        chdir = inner.get("chdir", False)
+        default_env = inner.get("env", "dev")
+        description = inner.get("description", None)
+
+        @app.command(alias, help=description)
+        def _(
+            env: str = Option(
+                default_env, help="Environment in which to run the command"
+            )
+        ):
+            if chdir:
+                os.chdir(get_git_root("."))
+            run(args=command, env=env)
+
+    try:
+        app()
+    except Exception as err:
+        echo("\033[31mError:")
+        raise SystemExit(err)
+
+
+@app.command()
 def update(
     env: str = Option(
         ...,
@@ -35,7 +79,7 @@ def update(
             soap.prepare_env(env, cfg, ignore_cache=True)
 
 
-@main.command()
+@app.command()
 def run(
     args: str = Argument(..., help="Command to run in the specified environment"),
     env: str = Option("dev", help="Environment in which to run the command"),

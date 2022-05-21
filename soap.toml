@@ -1,4 +1,10 @@
 [envs]
 dev = "devtools/conda-envs/test_env.yml"
 user = "devtools/conda-envs/user_env.yml"
-user = "devtools/conda-envs/docs_env.yml"
+docs = "devtools/conda-envs/docs_env.yml"
+
+[aliases.docs]
+cmd = "sphinx-build -j auto docs docs/_build/html"
+chdir = true
+env = "docs"
+description = "Build the docs with Sphinx"

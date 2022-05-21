@@ -15,4 +15,5 @@ dependencies:
   - typer
 
   # Docs depends
-  - sphinx >=5.0,<6.0
+  - sphinx >=4.5,<5.0
+  - sphinx_rtd_theme
