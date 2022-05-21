@@ -1,4 +1,4 @@
-from typing import Callable, Mapping
+from typing import Callable
 import os
 
 import typer
@@ -35,24 +35,18 @@ def app(
 
 
 def main():
-    cfg = soap.get_cfg()
-    for alias, inner in cfg["aliases"].items():
-        if isinstance(inner, str):
-            inner = {"cmd": inner}
-        command = inner["cmd"]
-        chdir = inner.get("chdir", False)
-        default_env = inner.get("env", "dev")
-        description = inner.get("description", None)
+    cfg = soap.Config()
+    for alias in cfg.aliases:
 
-        @app.command(alias, help=description)
+        @app.command(alias.name, help=alias.description)
         def _(
             env: str = Option(
-                default_env, help="Environment in which to run the command"
+                alias.default_env, help="Environment in which to run the command"
             )
         ):
-            if chdir:
+            if alias.chdir:
                 os.chdir(get_git_root("."))
-            run(args=command, env=env)
+            run(args=alias.command, env=env)
 
     try:
         app()
@@ -71,12 +65,12 @@ def update(
     """
     Update all environments in soap.toml
     """
-    cfg = soap.get_cfg()
+    cfg = soap.Config()
     if env is not None:
-        soap.prepare_env(env, cfg, ignore_cache=True)
+        soap.prepare_env(cfg.envs[env], ignore_cache=True)
     else:
-        for env in cfg["envs"]:
-            soap.prepare_env(env, cfg, ignore_cache=True)
+        for this_env in cfg.envs.values():
+            soap.prepare_env(this_env, ignore_cache=True)
 
 
 @app.command()
@@ -85,9 +79,10 @@ def run(
     env: str = Option("dev", help="Environment in which to run the command"),
 ):
     """Run a command in an environment"""
-    cfg = soap.get_cfg()
-    soap.prepare_env(env, cfg)
-    soap.run_in_env(args.split(), env, cfg)
+    cfg = soap.Config()
+    this_env = cfg.envs[env]
+    soap.prepare_env(this_env)
+    soap.run_in_env(args.split(), this_env)
 
 
 if __name__ == "__main__":
