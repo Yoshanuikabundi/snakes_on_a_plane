@@ -1,6 +1,6 @@
 from typing import Mapping, Any, List, Union
 from soap.utils import get_git_root
-from soap.exceptions import ConfigError
+from soap.exceptions import ConfigError, MissingConfigFileError
 import toml
 from pathlib import Path
 
@@ -10,10 +10,14 @@ def _get_cfg_map(root_path: Path) -> Mapping[str, Any]:
     pyproject_path = root_path / "pyproject.toml"
     soaptoml_path = root_path / "soap.toml"
 
-    if pyproject_path.exists():
+    if soaptoml_path.exists():
+        return toml.load(soaptoml_path)
+    elif pyproject_path.exists():
         return toml.load(pyproject_path)["tool"]["soap"]
     else:
-        return toml.load(soaptoml_path)
+        raise MissingConfigFileError(
+            f"pyproject.toml and soap.toml both missing from {root_path}"
+        )
 
 
 class Config:

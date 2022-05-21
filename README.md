@@ -6,7 +6,7 @@ Snakes on a Plane
 
 [Conda] meets [Cargo]. SOAP lets you easily maintain Conda environments for individual projects.
 
-Specify environments in `soap.toml`:
+Soap is configured in `soap.toml`. SOAP always looks for this file in the root of the git repository it was called from. It can also be configured in the `tool.soap` table of `pyproject.toml`. Specify environments with a name and a Conda environment YAML file:
 
 ```toml
 [envs]
