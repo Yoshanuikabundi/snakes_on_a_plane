@@ -83,7 +83,7 @@ class Config:
             name: Env(name, value, env_path) for name, value in cfg["envs"].items()
         }
         self.aliases: List[Alias] = [
-            Alias(name, value) for name, value in cfg["aliases"].items()
+            Alias(name, value) for name, value in cfg.get("aliases", {}).items()
         ]
 
 
