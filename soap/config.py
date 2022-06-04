@@ -1,10 +1,11 @@
 """Configuration for Snakes on a Plane"""
 
-from typing import Mapping, Any, List, Union
+from typing import Any, Dict, Union
 from soap.utils import get_git_root
-from soap.exceptions import InvalidConfigError, MissingConfigFileError
+from soap.exceptions import MissingConfigFileError
 import toml
 from pathlib import Path
+from schema import Schema, Optional, Or, And, Use, Literal
 
 __all__ = [
     "Config",
@@ -13,7 +14,107 @@ __all__ = [
 ]
 
 
-def _get_cfg_map(root_path: Path) -> Mapping[str, Any]:
+def _get_name(schema):
+    while not isinstance(schema, str):
+        schema = schema.schema
+    return schema
+
+
+ENV_SCHEMA = Schema(
+    {
+        Literal(
+            "yml_path",
+            description="Path to YAML file defining the environment.",
+        ): And(str, Use(Path)),
+        Optional(
+            Literal(
+                "env_path",
+                description="Prefix of the new environment. Defaults to `.soap/<name of environment>`",
+            ),
+            default=None,
+        ): And(str, Use(Path)),
+        Optional(
+            Literal(
+                "install_current",
+                description="If True, install the current project in this environment.",
+            ),
+            default=True,
+        ): bool,
+    }
+)
+ENV_SCHEMA_JSON = ENV_SCHEMA.json_schema("`[envs]`")
+
+_ENV_DEFAULTS = {
+    _get_name(key): key.default for key in ENV_SCHEMA.schema if hasattr(key, "default")
+}
+
+ALIAS_SCHEMA = Schema(
+    {
+        Literal("cmd", description="The command to alias"): str,
+        Optional(
+            Literal(
+                "chdir",
+                description="If True, always run this command in the git repository root directory.",
+            ),
+            default=False,
+        ): bool,
+        Optional(
+            Literal(
+                "env",
+                description="The environment in which to run this command when the --env argument is not passed.",
+            ),
+            default="test",
+        ): str,
+        Optional(
+            Literal(
+                "description",
+                description="A description of this command for the --help argument.",
+            ),
+            default=None,
+        ): str,
+        Optional(
+            Literal(
+                "passthrough_args",
+                description="If True, SOAP will pass any unrecognised arguments through to the aliased command.",
+            ),
+            default=False,
+        ): bool,
+    }
+)
+ALIAS_SCHEMA_JSON = ALIAS_SCHEMA.json_schema("`[aliases]`")
+
+_ALIAS_DEFAULTS = {
+    _get_name(key): key.default
+    for key in ALIAS_SCHEMA.schema
+    if hasattr(key, "default")
+}
+
+CFG_SCHEMA = Schema(
+    {
+        Optional("envs", default={}): Or(
+            {},
+            {
+                str: Or(
+                    And(str, Use(lambda s: _ENV_DEFAULTS | {"yml_path": Path(s)})),
+                    ENV_SCHEMA,
+                )
+            },
+        ),
+        Optional("aliases", default={}): Or(
+            {},
+            {
+                str: Or(
+                    And(str, Use(lambda s: _ALIAS_DEFAULTS | {"cmd": s})),
+                    ALIAS_SCHEMA,
+                )
+            },
+        ),
+    }
+)
+CFG_SCHEMA_JSON = CFG_SCHEMA.json_schema("Snakes On A Plane: `soap.toml`")
+
+
+def _get_cfg_map(root_path: Path) -> Dict[str, Any]:
     """
     Get the configuration map for SOAP
 
@@ -29,18 +130,25 @@ def _get_cfg_map(root_path: Path) -> Mapping[str, Any]:
     MissingConfigFileError
         If ``pyproject.toml`` and ``soap.toml`` are both missing from the root
         path.
+    TomlDecodeError
+        If the file was found but is not valid TOML
+    SchemaError
+        If the config file is valid TOML but does not match the SOAP configuration
+        schema.
     """
     pyproject_path = root_path / "pyproject.toml"
     soaptoml_path = root_path / "soap.toml"
 
     if soaptoml_path.exists():
-        return toml.load(soaptoml_path)
+        data = toml.load(soaptoml_path)
     elif pyproject_path.exists():
-        return toml.load(pyproject_path)["tool"]["soap"]
+        data = toml.load(pyproject_path)["tool"]["soap"]
     else:
         raise MissingConfigFileError(
             f"pyproject.toml and soap.toml both missing from {root_path}"
         )
+
+    return CFG_SCHEMA.validate(data)
 
 
 class Config:
@@ -50,8 +158,6 @@ class Config:
     Attributes
     ==========
 
-    git_root
-        The root directory of the Git repository.
     envs
         Mapping from environment names to environment ``Env`` objects. The map
         key matches the ``.name`` attribute of the environment.
@@ -61,30 +167,34 @@ class Config:
     Raises
     ======
 
-    InvalidConfigError
-        If an environment is missing a ``yml_path`` or an alias is missing a
-        ``command``
     MissingConfigFileError
-        If ``pyproject.toml`` and ``soap.toml`` are both missing from the
-        current Git repository root directory.
-
-
+        If ``pyproject.toml`` and ``soap.toml`` are both missing from the root
+        path.
+    TomlDecodeError
+        If the file was found but is not valid TOML
+    SchemaError
+        If the config file is valid TOML but does not match the SOAP configuration
+        schema.
     """
 
-    def __init__(self):
-        self.git_root = get_git_root(".")
-        cfg = _get_cfg_map(self.git_root)
+    def __init__(
+        self,
+        git_root: Union[Path, None] = None,
+        cfg: Union[Dict[str, Any], None] = None,
+    ):
+        if git_root is None:
+            git_root = get_git_root(".")
 
-        env_path = Path(cfg.get("env_path", ".soap"))
-        if not env_path.is_absolute():
-            env_path = self.git_root / env_path
+        if cfg is None:
+            cfg = _get_cfg_map(git_root)
 
-        self.envs: Mapping[str, Env] = {
-            name: Env(name, value, env_path) for name, value in cfg["envs"].items()
+        self.envs = {
+            name: Env(name, value, git_root) for name, value in cfg["envs"].items()
         }
-        self.aliases: List[Alias] = [
-            Alias(name, value) for name, value in cfg.get("aliases", {}).items()
-        ]
+        self.aliases = [Alias(name, value) for name, value in cfg["aliases"].items()]
+
+    def __repr__(self):
+        return f"<Config with aliases {self.aliases!r} and envs {self.envs!r}>"
 
 
 class Env:
@@ -103,38 +213,32 @@ class Env:
     install_current
         True if the current project should be installed
         in the environment with ``pip install -e .``
-
-
-    Raises
-    ======
-
-    InvalidConfigError
-        If the environment is missing a ``yml_path``
     """
 
     def __init__(
         self,
         name: str,
-        value: Union[str, Mapping[str, Any]],
-        base_env_path: Path,
+        value: Dict[str, Any],
+        env_root: Path,
     ):
         self.name: str = name
 
-        if isinstance(value, str):
-            value = {"yml_path": value}
-
-        try:
-            self.yml_path = Path(value["yml_path"])
-        except KeyError:
-            raise InvalidConfigError(
-                f"Value 'yml_path' missing from environment '{name}'"
-            )
-
-        self.env_path = Path(value.get("env_path", base_env_path / name))
-        self.install_current: bool = bool(value.get("install_current", True))
+        self.yml_path = value["yml_path"]
+        self.env_path = (
+            Path(env_root) / ".soap" / self.name
+            if value["env_path"] is None
+            else value["env_path"]
+        )
+        self.install_current = value["install_current"]
 
     def __repr__(self):
-        return f"Env(name={self.name!r}, value={{yml_path: {self.yml_path!r}, env_path: {self.env_path!r}}})"
+        return (
+            f"Env(name={self.name!r}, value={{"
+            + f"yml_path: {self.yml_path!r}, "
+            + f"env_path: {self.env_path!r}, "
+            + f"install_current: {self.install_current!r}"
+            + f"}})"
+        )
 
 
 class Alias:
@@ -154,29 +258,27 @@ class Alias:
     default_env
         The environment to run the alias in if none is specified on the command
         line.
-
-    Raises
-    ======
-
-    InvalidConfigError
-        If the alias is missing a ``command``.
     """
 
-    def __init__(self, name, value: Union[str, Mapping[str, Any]]):
-        self.name: str = name
-
-        if isinstance(value, str):
-            value = {"cmd": value}
-
-        try:
-            self.command = value["cmd"]
-        except KeyError:
-            raise InvalidConfigError(f"Value 'cmd' missing from alias '{name}'")
-
-        self.chdir = value.get("chdir", False)
-        self.default_env = value.get("env", "dev")
-        self.description = value.get("description", None)
-        self.passthrough_args = value.get("passthrough_args", False)
+    def __init__(
+        self,
+        name,
+        value: Dict[str, Any],
+    ):
+        self.name = name
+        self.command = value["cmd"]
+        self.chdir = value["chdir"]
+        self.default_env = value["env"]
+        self.description = value["description"]
+        self.passthrough_args = value["passthrough_args"]
 
     def __repr__(self):
-        return f"Alias(name={self.name!r}, value={{cmd: {self.command!r}, chdir: {self.chdir!r}, env: {self.default_env!r}, description: {self.description!r}}})"
+        return (
+            f"Alias(name={self.name!r}, value={{"
+            + f"cmd: {self.command!r}, "
+            + f"chdir: {self.chdir!r}, "
+            + f"env: {self.default_env!r}, "
+            + f"description: {self.description!r}}}, "
+            + f"passthrough_args: {self.passthrough_args!r}"
+            + f"}})"
+        )

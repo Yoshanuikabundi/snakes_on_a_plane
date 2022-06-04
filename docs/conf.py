@@ -56,6 +56,7 @@ extensions = [
     "sphinx.ext.doctest",
     "myst_parser",
     "sphinx_click",
+    "sphinx-jsonschema",
 ]
 
 

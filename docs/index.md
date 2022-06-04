@@ -12,6 +12,7 @@ hidden: true
 ---
 
 Overview <self>
+configuring.md
 :::
 
 :::{toctree}

@@ -1,11 +1,9 @@
 name: docs
 channels:
-
   - conda-forge
-
   - defaults
 dependencies:
-    # Base depends
+  # Base depends
   - python
   - pip
 
@@ -13,6 +11,7 @@ dependencies:
   - gitpython
   - toml
   - typer
+  - schema
 
   # Docs depends
   - sphinx >=4.5,<5.0
@@ -20,3 +19,4 @@ dependencies:
   - myst-parser>=0.13.6
   - sphinx-notfound-page
   - sphinx-click
+  - sphinx-jsonschema 

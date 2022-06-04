@@ -1,7 +1,11 @@
 [envs]
 test = "devtools/conda-envs/test_env.yml"
-user = "devtools/conda-envs/user_env.yml"
-docs = "devtools/conda-envs/docs_env.yml"
+docs = {yml_path = "devtools/conda-envs/docs_env.yml", install_current = false}
+
+[envs.user]
+yml_path = "devtools/conda-envs/user_env.yml"
+env_path = "/home/someone/conda/envs/soap-env"
+install_current = true
 
 [aliases]
 list = "conda list"
@@ -12,10 +16,4 @@ cmd = "sphinx-build -j auto docs docs/_build/html"
 chdir = true
 env = "docs"
 description = "Build the docs with Sphinx"
-
-[aliases.test]
-cmd = "pytest soap/tests"
-chdir = true
-env = "test"
-description = "Run unit and regression tests with pytest"
 passthrough_args = true
