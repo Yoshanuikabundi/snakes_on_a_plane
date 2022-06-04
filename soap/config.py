@@ -100,6 +100,10 @@ class Env:
         Path to the Conda environment YAML file
     env_path
         Path to the environment prefix
+    install_current
+        True if the current project should be installed 
+        in the environment with ``pip install -e .`` 
+
 
     Raises
     ======
@@ -127,6 +131,7 @@ class Env:
             )
 
         self.env_path = Path(value.get("env_path", base_env_path / name))
+        self.install_current: bool = bool(value.get("install_current", True))
 
     def __repr__(self):
         return f"Env(name={self.name!r}, value={{yml_path: {self.yml_path!r}, env_path: {self.env_path!r}}})"
@@ -171,6 +176,7 @@ class Alias:
         self.chdir = value.get("chdir", False)
         self.default_env = value.get("env", "dev")
         self.description = value.get("description", None)
+        self.passthrough_args = value.get("passthrough_args", False)
 
     def __repr__(self):
         return f"Alias(name={self.name!r}, value={{cmd: {self.command!r}, chdir: {self.chdir!r}, env: {self.default_env!r}, description: {self.description!r}}})"

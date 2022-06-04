@@ -13,30 +13,30 @@ from soap.utils import get_git_root
 
 def callback(func: Callable) -> Typer:
     """Decorator to define a Typer with callback"""
-    return Typer(callback=func)
-
-
-def version_callback(version: bool):
-    """Callback for the --version switch"""
-    if version:
-        echo(f"Snakes On A Plane {soap.__version__}")
-        raise typer.Exit()
+    return Typer(callback=func, invoke_without_command=True)
 
 
 @callback
 def app(
+    ctx: typer.Context,     
     version: bool = Option(
         False,
         "--version",
         is_eager=True,
-        help="Show version and exit.",
-        callback=version_callback,
+        help="Show version and exit."
     )
 ):
     """
     Snakes on a Plane: Cargo for Conda.
     """
-    pass
+    if version:
+        echo(f"Snakes On A Plane {soap.__version__}")
+        raise typer.Exit()
+    if ctx.invoked_subcommand is None:
+        echo("No subcommand given; for help, pass '--help'")
+        raise typer.Exit(1)
+
+
 
 
 def main():
@@ -46,16 +46,27 @@ def main():
     cfg = soap.Config()
     for alias in cfg.aliases:
 
-        @app.command(alias.name, help=alias.description)
+        @app.command(
+            alias.name,
+            help=alias.description,     
+            context_settings={
+                "allow_extra_args": alias.passthrough_args, 
+                "ignore_unknown_options": alias.passthrough_args
+            },
+        )
         def _(
+            ctx: typer.Context,
             env: str = Option(
                 alias.default_env, help="Environment in which to run the command"
             ),
-            chdir=Option(alias.chdir, hidden=True),
-            command=Option(alias.command, hidden=True),
+            chdir: bool = Option(alias.chdir, hidden=True),
+            command: str = Option(alias.command, hidden=True),
+            passthrough_args: bool = Option(alias.passthrough_args, hidden=True),
         ):
             if chdir:
                 os.chdir(get_git_root("."))
+            if passthrough_args:
+                command = " ".join([command, *ctx.args])
             run(args=command, env=env)
 
     try:
