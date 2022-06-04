@@ -10,6 +10,9 @@ from typer import Argument, Option, Typer, echo
 import soap
 from soap.utils import get_git_root
 
+NO_SUBCOMMAND_EXIT_CODE = 1
+"""Exit code given when no subcommand is provided at command line"""
+
 
 def callback(func: Callable) -> Typer:
     """Decorator to define a Typer with callback"""
@@ -18,13 +21,10 @@ def callback(func: Callable) -> Typer:
 
 @callback
 def app(
-    ctx: typer.Context,     
+    ctx: typer.Context,
     version: bool = Option(
-        False,
-        "--version",
-        is_eager=True,
-        help="Show version and exit."
-    )
+        False, "--version", is_eager=True, help="Show version and exit."
+    ),
 ):
     """
     Snakes on a Plane: Cargo for Conda.
@@ -34,9 +34,7 @@ def app(
         raise typer.Exit()
     if ctx.invoked_subcommand is None:
         echo("No subcommand given; for help, pass '--help'")
-        raise typer.Exit(1)
-
-
+        raise typer.Exit(NO_SUBCOMMAND_EXIT_CODE)
 
 
 def main():
@@ -48,10 +46,10 @@ def main():
 
         @app.command(
             alias.name,
-            help=alias.description,     
+            help=alias.description,
             context_settings={
-                "allow_extra_args": alias.passthrough_args, 
-                "ignore_unknown_options": alias.passthrough_args
+                "allow_extra_args": alias.passthrough_args,
+                "ignore_unknown_options": alias.passthrough_args,
             },
         )
         def _(

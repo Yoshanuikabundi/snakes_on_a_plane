@@ -28,7 +28,9 @@ def prepare_env(env: Env, ignore_cache=False):
         or (not path_cached_yml.exists())
         or (not filecmp.cmp(path_cached_yml, path_yml))
     ):
-        soap.conda.env_from_file(path_yml, path_env, install_current=env.install_current)
+        soap.conda.env_from_file(
+            path_yml, path_env, install_current=env.install_current
+        )
         shutil.copy2(path_yml, path_env)
 
 

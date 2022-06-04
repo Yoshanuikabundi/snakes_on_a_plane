@@ -101,8 +101,8 @@ class Env:
     env_path
         Path to the environment prefix
     install_current
-        True if the current project should be installed 
-        in the environment with ``pip install -e .`` 
+        True if the current project should be installed
+        in the environment with ``pip install -e .``
 
 
     Raises
