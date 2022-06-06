@@ -9,6 +9,7 @@ from typer import Argument, Option, Typer, echo
 
 import soap
 from soap.utils import get_git_root
+from soap.config import DEFAULT_ENV
 
 NO_SUBCOMMAND_EXIT_CODE = 1
 """Exit code given when no subcommand is provided at command line"""
@@ -101,7 +102,7 @@ def update(
 @app.command()
 def run(
     args: str = Argument(..., help="Command to run in the specified environment"),
-    env: str = Option("dev", help="Environment in which to run the command"),
+    env: str = Option(DEFAULT_ENV, help="Environment in which to run the command"),
 ):
     """Run a command in an environment"""
     cfg = soap.Config()

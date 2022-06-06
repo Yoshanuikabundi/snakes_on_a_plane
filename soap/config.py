@@ -20,6 +20,9 @@ def _get_name(schema):
     return schema
 
 
+DEFAULT_ENV = "test"
+
+
 ENV_SCHEMA = Schema(
     {
         Literal(
@@ -63,7 +66,7 @@ ALIAS_SCHEMA = Schema(
                 "env",
                 description="The environment in which to run this command when the --env argument is not passed.",
             ),
-            default="test",
+            default=DEFAULT_ENV,
         ): str,
         Optional(
             Literal(
