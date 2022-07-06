@@ -226,12 +226,20 @@ class Env:
     ):
         self.name: str = name
 
-        self.yml_path = value["yml_path"]
+        self.yml_path = (
+            value["yml_path"]
+            if value["yml_path"].is_absolute()
+            else Path(env_root) / value["yml_path"]
+        )
+
         self.env_path = (
-            Path(env_root) / ".soap" / self.name
+            Path(".soap") / self.name
             if value["env_path"] is None
             else value["env_path"]
         )
+        if not self.env_path.is_absolute():
+            self.env_path = Path(env_root) / self.env_path
+
         self.install_current = value["install_current"]
 
     def __repr__(self):
