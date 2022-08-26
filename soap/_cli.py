@@ -81,6 +81,10 @@ def update(
         None,
         help="Environment to update. If not specified, all environments will be updated.",
     ),
+    recreate: bool = Option(
+        False,
+        help="Delete and recreate the environment(s), rather than attempting to update in place",
+    ),
 ):
     """
     Update Conda environments.
@@ -96,7 +100,11 @@ def update(
             + f"from '{this_env.yml_path}' "
             + f"in '{this_env.env_path}':\u001b[0m"
         )
-        soap.prepare_env(this_env, ignore_cache=True)
+        soap.prepare_env(
+            this_env,
+            ignore_cache=True,
+            allow_update=not recreate,
+        )
 
 
 @app.command()

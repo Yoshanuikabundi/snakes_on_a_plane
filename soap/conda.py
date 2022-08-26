@@ -56,6 +56,7 @@ def env_from_file(
     file: Union[str, Path],
     env_path: Union[str, Path],
     install_current=False,
+    allow_update: bool = True,
 ):
     """
     Create or update an enviroment from a Conda environment YAML file
@@ -70,8 +71,15 @@ def env_from_file(
     install_current
         If ``True``, the root directory of the current Git repository will be
         installed in dev mode with `pip install -e`
+    allow_update
+        If ``True``, attempt to update an existing environment. If ``False``,
+        delete and recreate an existing environment.
     """
-    if Path(env_path).exists():
+    env_path = Path(env_path)
+    if not allow_update:
+        env_path.unlink(missing_ok=True)
+
+    if env_path.exists() and allow_update:
         conda(
             [
                 "env",

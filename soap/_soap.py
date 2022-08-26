@@ -5,7 +5,11 @@ import shutil
 import filecmp
 
 
-def prepare_env(env: Env, ignore_cache=False):
+def prepare_env(
+    env: Env,
+    ignore_cache: bool = False,
+    allow_update: bool = True,
+):
     """
     Prepare the provided environment
 
@@ -18,6 +22,9 @@ def prepare_env(env: Env, ignore_cache=False):
         If True, rebuild the environment even if the cache suggests it is
         up-to-date. If False, only rebuild the environment when the YAML file
         itself has changed since the last build.
+    allow_update
+        If ``True``, attempt to update an existing environment. If ``False``,
+        delete and recreate an existing environment.
     """
     path_yml = env.yml_path
     path_env = env.env_path
@@ -29,9 +36,12 @@ def prepare_env(env: Env, ignore_cache=False):
         or (not filecmp.cmp(path_cached_yml, path_yml))
     ):
         soap.conda.env_from_file(
-            path_yml, path_env, install_current=env.install_current
+            path_yml,
+            path_env,
+            install_current=env.install_current,
+            allow_update=allow_update,
         )
-        shutil.copy2(path_yml, path_env)
+        shutil.copy2(path_yml, path_cached_yml)
 
 
 def run_in_env(args: Sequence[str], env: Env):
