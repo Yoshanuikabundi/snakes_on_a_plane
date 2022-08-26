@@ -3,7 +3,7 @@
 from os import environ
 from pathlib import Path
 from typing import Sequence, Dict, Optional, Union
-from shutil import which
+from shutil import which, rmtree
 import subprocess as sp
 from soap.utils import get_git_root
 
@@ -15,7 +15,7 @@ def conda(
     *,
     stdin: Optional[str] = None,
     env: Optional[Dict[str, str]] = None,
-    cmd: Optional[str] = None
+    cmd: Optional[str] = None,
 ):
     """
     Call conda or mamba with the specified arguments
@@ -76,8 +76,8 @@ def env_from_file(
         delete and recreate an existing environment.
     """
     env_path = Path(env_path)
-    if not allow_update:
-        env_path.unlink(missing_ok=True)
+    if env_path.exists() and not allow_update:
+        rmtree(env_path)
 
     if env_path.exists() and allow_update:
         conda(
