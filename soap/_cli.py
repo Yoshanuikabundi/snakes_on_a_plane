@@ -3,6 +3,7 @@
 from typing import Callable, Optional
 import os
 import shlex
+from subprocess import CalledProcessError
 
 import typer
 from typer import Argument, Option, Typer, echo
@@ -116,7 +117,10 @@ def run(
     cfg = soap.Config()
     this_env = cfg.envs[env]
     soap.prepare_env(this_env)
-    soap.run_in_env(shlex.split(args), this_env)
+    try:
+        soap.run_in_env(shlex.split(args), this_env)
+    except CalledProcessError as e:
+        exit(e.returncode)
 
 
 _click = typer.main.get_command(app)
