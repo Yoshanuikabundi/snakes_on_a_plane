@@ -55,7 +55,7 @@ def conda(
 def env_from_file(
     file: Union[str, Path],
     env_path: Union[str, Path],
-    install_current=False,
+    install_current: bool = False,
     allow_update: bool = True,
 ):
     """

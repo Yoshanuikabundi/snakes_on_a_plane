@@ -43,6 +43,20 @@ ENV_SCHEMA = Schema(
             ),
             default=True,
         ): bool,
+        Optional(
+            Literal(
+                "additional_channels",
+                description="Channels to prepend to the environment file's channel list.",
+            ),
+            default=[],
+        ): [str],
+        Optional(
+            Literal(
+                "additional_dependencies",
+                description="Packages and constraints to add to the environment file.",
+            ),
+            default=[],
+        ): [str],
     }
 )
 ENV_SCHEMA_JSON = ENV_SCHEMA.json_schema("`[envs]`")
@@ -241,13 +255,16 @@ class Env:
             self.env_path = Path(env_root) / self.env_path
 
         self.install_current = value["install_current"]
+        self.additional_channels = value["additional_channels"]
+        self.additional_dependencies = value["additional_dependencies"]
 
     def __repr__(self):
         return (
             f"Env(name={self.name!r}, value={{"
             + f"yml_path: {self.yml_path!r}, "
             + f"env_path: {self.env_path!r}, "
-            + f"install_current: {self.install_current!r}"
+            + f"install_current: {self.install_current!r},"
+            + f"additional_packages: {self.additional_packages!r},"
             + f"}})"
         )
 

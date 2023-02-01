@@ -12,8 +12,9 @@ dependencies:
   - toml
   - typer
   - schema
+  - pyyaml
 
-    # Testing
+  # Testing
   - pytest
   - pytest-cov
   - codecov

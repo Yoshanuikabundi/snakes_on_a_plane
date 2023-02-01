@@ -12,3 +12,4 @@ dependencies:
   - toml
   - typer
   - schema
+  - pyyaml
