@@ -7,6 +7,7 @@ from subprocess import CalledProcessError
 
 import typer
 from typer import Argument, Option, Typer, echo
+import rich, rich.tree
 
 import soap
 from soap.utils import get_git_root
@@ -132,6 +133,78 @@ def run(
         soap.run_in_env(shlex.split(args), this_env)
     except CalledProcessError as e:
         exit(e.returncode)
+
+
+@app.command()
+def list(
+    verbosity: int = typer.Option(
+        0,
+        "--verbose",
+        "-v",
+        count=True,
+        help="Present more information.",
+    )
+):
+    """List the available environments."""
+    cfg = soap.Config()
+
+    if verbosity < 3:
+        captions = [
+            "📦 Is the root package installed in this environment?",
+            "🪧 Number of additional channels\n📥 Number of additional dependencies",
+        ]
+
+        table = rich.table.Table(
+            title="Snakes on a Plane environments",
+            caption="\n" + "\n".join(captions[:verbosity]),
+            caption_justify="left",
+            caption_style="dim",
+            box=rich.box.SIMPLE,
+            show_edge=False,
+        )
+
+        table.add_column("Name", style="bold")
+        table.add_column("YML path")
+        if verbosity > 0:
+            table.add_column("📦")
+        if verbosity > 1:
+            table.add_column("🪧")
+            table.add_column("📥")
+
+        for env in cfg.envs.values():
+            row = [env.name, str(env.yml_path)]
+            if verbosity > 0:
+                row.append("✓" if env.install_current else "")
+            if verbosity > 1:
+                row.append(str(len(env.additional_channels)))
+                row.append(str(len(env.additional_dependencies)))
+
+            table.add_row(*row)
+
+        rich.print(table)
+    else:
+        tree = rich.tree.Tree("[i]Snakes on a Plane environments", guide_style="dim")
+
+        for env in cfg.envs.values():
+            branch = tree.add(f"[cyan bold]{env.name}")
+            yml_branch = branch.add(f"[b]YAML path:[/b] {env.yml_path}")
+            branch.add(f"[b]Environment path:[/b] {env.env_path}")
+            environment_exists = (
+                "Yes" if (env.env_path / "conda-meta").exists() else "No"
+            )
+            branch.add(f"[b]Environment exists?:[/b] {environment_exists}")
+            branch.add(f"[b]Install root package:[/b] {env.install_current}")
+            if env.additional_channels or verbosity > 3:
+                branch.add(f"[b]Additional channels:[/b] {env.additional_channels}")
+            if env.additional_dependencies or verbosity > 3:
+                branch.add(
+                    f"[b]Additional dependencies:[/b] {env.additional_dependencies}"
+                )
+            if verbosity > 3:
+                syntax = rich.syntax.Syntax(env.yml_path.read_text(), "yaml")
+                yml_branch.add(syntax)
+
+        rich.print(tree)
 
 
 _click = typer.main.get_command(app)

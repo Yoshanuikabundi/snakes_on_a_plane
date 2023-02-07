@@ -4,7 +4,6 @@ user = "devtools/conda-envs/user_env.yml"
 docs = "devtools/conda-envs/docs_env.yml"
 
 [aliases]
-list = "conda list"
 greet = "echo hello world"
 
 [aliases.docs]
