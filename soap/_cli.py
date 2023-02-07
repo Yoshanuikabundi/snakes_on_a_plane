@@ -6,7 +6,7 @@ import shlex
 from subprocess import CalledProcessError
 
 import typer
-from typer import Argument, Option, Typer, echo
+from typer import Argument, Option, Typer
 import rich, rich.tree
 
 import soap
@@ -40,10 +40,10 @@ def app(
     Snakes on a Plane: Cargo for Conda.
     """
     if version:
-        echo(f"Snakes On A Plane {soap.__version__}")
+        rich.print(f"Snakes On A Plane {soap.__version__}")
         raise typer.Exit()
     if ctx.invoked_subcommand is None:
-        echo("No subcommand given; for help, pass '--help'")
+        rich.print("No subcommand given; for help, pass '--help'")
         raise typer.Exit(NO_SUBCOMMAND_EXIT_CODE)
 
 
@@ -81,7 +81,7 @@ def main():
     try:
         app()
     except Exception as err:
-        echo("\033[31mError:\u001b[0m")
+        rich.print("[red]Error:")
         if os.environ.get("SOAP_DEBUG", ""):
             raise err
         else:
@@ -104,14 +104,12 @@ def update(
     """
     cfg = soap.Config()
     envs = cfg.envs.values() if env is None else [cfg.envs[env]]
-    echo(
-        f"\u001b[36mUpdating {len(envs)} environment{'s' if len(envs) != 1 else ''}\u001b[0m"
-    )
+    rich.print(f"[cyan]Updating {len(envs)} environment{'s' if len(envs) != 1 else ''}")
     for this_env in envs:
-        echo(
-            f"\n\u001b[36mPreparing environment '{this_env.name}' "
+        rich.print(
+            f"[cyan]Preparing environment '{this_env.name}' "
             + f"from '{this_env.yml_path}' "
-            + f"in '{this_env.env_path}':\u001b[0m"
+            + f"in '{this_env.env_path}'"
         )
         soap.prepare_env(
             this_env,
