@@ -55,7 +55,6 @@ def conda(
 def env_from_file(
     file: Union[str, Path],
     env_path: Union[str, Path],
-    install_current: bool = False,
     allow_update: bool = True,
 ):
     """
@@ -68,9 +67,6 @@ def env_from_file(
         Path to the Conda environment YAML file
     env_path
         Path to the prefix to create or update the Conda environment
-    install_current
-        If ``True``, the root directory of the current Git repository will be
-        installed in dev mode with ``pip install -e``
     allow_update
         If ``True``, attempt to update an existing environment. If ``False``,
         delete and recreate an existing environment.
@@ -111,17 +107,6 @@ def env_from_file(
                 "--prefix",
                 str(env_path),
             ]
-        )
-
-    if install_current:
-        run_in_env(
-            [
-                "pip",
-                "install",
-                "-e",
-                str(get_git_root(".")),
-            ],
-            env_path,
         )
 
 

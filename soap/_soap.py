@@ -1,11 +1,27 @@
 from pathlib import Path
-from typing import Dict, List, Sequence, Optional
+from typing import Dict, List, Sequence, Optional, Union
 import hashlib
 import soap.conda
 from soap.config import Env
 import shutil
 import filecmp
 import yaml
+
+
+def add_pip_package(
+    package: str,
+    dependencies: List[Union[str, Dict[str, List[str]]]],
+):
+    """
+    Add package to all existing pip entries, or to a new entry if there are none
+    """
+    n_pips = 0
+    for entry in dependencies:
+        if isinstance(entry, dict) and "pip" in entry:
+            n_pips += 1
+            entry["pip"].append(package)
+    if n_pips == 0:
+        dependencies.append({"pip": [package]})
 
 
 def prepare_env_file(env: Env) -> Dict:
@@ -26,6 +42,13 @@ def prepare_env_file(env: Env) -> Dict:
     env_dict["name"] = env_dict.get("name", "") + "." + env_hash
     env_dict["channels"] = env.additional_channels + env_dict.get("channels", [])
     env_dict.setdefault("dependencies", []).extend(env.additional_dependencies)
+
+    # Add the current package if required
+    if env.install_current:
+        add_pip_package(
+            f"-e {env.package_root}",
+            env_dict["dependencies"],
+        )
 
     # Choose an output file name
     path_out = env.env_path / ".soap_env-working.yml"
@@ -61,29 +84,28 @@ def prepare_env(
         delete and recreate an existing environment.
     """
     # Prepare the working environment file
-    path_working_yml = prepare_env_file(env)
+    working_yaml_path = prepare_env_file(env)
 
     # We need a path to cache our prepared environment to after building
-    path_cached_yml = env.env_path / ".soap_env.yml"
+    cached_yaml_path = env.env_path / ".soap_env.yml"
 
     # Create the environment, or clean up what we've already prepared
     if (
         ignore_cache
-        or (not path_cached_yml.exists())
-        or (not filecmp.cmp(path_cached_yml, path_working_yml))
+        or (not cached_yaml_path.exists())
+        or (not filecmp.cmp(cached_yaml_path, working_yaml_path))
     ):
         # Create the environment
         soap.conda.env_from_file(
-            working_yml_path,
+            working_yaml_path,
             env.env_path,
-            install_current=env.install_current,
             allow_update=allow_update,
         )
         # Cache the environment file we used
-        path_working_yml.rename(path_cached_yml)
+        working_yaml_path.rename(cached_yaml_path)
     else:
         # Nothing to do, so clean up the files we made
-        path_working_yml.unlink()
+        working_yaml_path.unlink()
 
 
 def run_in_env(args: Sequence[str], env: Env):
