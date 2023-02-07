@@ -18,14 +18,21 @@ NO_SUBCOMMAND_EXIT_CODE = 1
 
 def callback(func: Callable) -> Typer:
     """Decorator to define a Typer with callback"""
-    return Typer(callback=func, invoke_without_command=True)
+    return Typer(
+        callback=func,
+        invoke_without_command=True,
+        rich_markup_mode="rich",
+    )
 
 
 @callback
 def app(
     ctx: typer.Context,
     version: bool = Option(
-        False, "--version", is_eager=True, help="Show version and exit."
+        False,
+        "--version",
+        is_eager=True,
+        help="Show version and exit.",
     ),
 ):
     """
@@ -53,6 +60,7 @@ def main():
                 "allow_extra_args": alias.passthrough_args,
                 "ignore_unknown_options": alias.passthrough_args,
             },
+            rich_help_panel="Aliases",
         )
         def _(
             ctx: typer.Context,
@@ -116,7 +124,7 @@ def run(
     args: str = Argument(..., help="Command to run in the specified environment"),
     env: str = Option(DEFAULT_ENV, help="Environment in which to run the command"),
 ):
-    """Run a command in an environment"""
+    """Run a command in an environment."""
     cfg = soap.Config()
     this_env = cfg.envs[env]
     soap.prepare_env(this_env)

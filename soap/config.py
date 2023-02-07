@@ -87,7 +87,7 @@ ALIAS_SCHEMA = Schema(
                 "description",
                 description="A description of this command for the --help argument.",
             ),
-            default=None,
+            default="",
         ): str,
         Optional(
             Literal(
@@ -300,7 +300,7 @@ class Alias:
         self.command = value["cmd"]
         self.chdir = value["chdir"]
         self.default_env = value["env"]
-        self.description = value["description"]
+        self.description = value["description"] or "Alias for `" + self.command + "`"
         self.passthrough_args = value["passthrough_args"]
 
     def __repr__(self):

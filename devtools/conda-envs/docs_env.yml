@@ -10,7 +10,7 @@ dependencies:
   # Imports
   - gitpython
   - toml
-  - typer
+  - typer[all]>=0.6
   - schema
   - pyyaml
 
