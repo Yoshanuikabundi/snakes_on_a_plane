@@ -8,26 +8,34 @@ import filecmp
 import yaml
 
 
-def env_dict_with(
-    env_file: Path,
-    channels: Optional[List[str]] = None,
-    dependencies: Optional[List[str]] = None,
-) -> Dict:
+def prepare_env_file(env: Env) -> Dict:
     """
-    Return a dict encoding the environment file updated with channels or deps.
+    Prepare an environment file and write it to the returned path
 
     The environment's name is augmented with a hash of the original file.
     Dependencies are appended to the dependency list, while channels are
-    preprended.
+    preprended. Returns the name of the written file.
     """
-    env_dict = yaml.safe_load(env_file.read_text())
-    env_hash = hashlib.md5(env_file.read_bytes()).hexdigest()
+    # Get a hash of the input YAML file
+    env_hash = hashlib.md5(env.yml_path.read_bytes()).hexdigest()
+
+    # Read the YAML file in to a dict
+    env_dict = yaml.safe_load(env.yml_path.read_text())
+
+    # Update the name, channels and dependencies of the environment
     env_dict["name"] = env_dict.get("name", "") + "." + env_hash
+    env_dict["channels"] = env.additional_channels + env_dict.get("channels", [])
+    env_dict.setdefault("dependencies", []).extend(env.additional_dependencies)
 
-    env_dict["channels"] = (channels or []) + env_dict.get("channels", [])
-    env_dict.setdefault("dependencies", []).extend(dependencies or [])
+    # Choose an output file name
+    path_out = env.env_path / ".soap_env-working.yml"
 
-    return env_dict
+    # Write the updated environment
+    path_out.parent.mkdir(exist_ok=True)
+    path_out.write_text(yaml.dump(env_dict))
+
+    # Return the output file name
+    return path_out
 
 
 def prepare_env(
@@ -44,26 +52,21 @@ def prepare_env(
     env
         The environment to prepare
     ignore_cache
-        If True, rebuild the environment even if the cache suggests it is
-        up-to-date. If False, only rebuild the environment when the YAML file
-        itself has changed since the last build.
+        If ``True``, rebuild or update the environment even if the cache
+        suggests it is up-to-date. If ``False``, only rebuild or update the
+        environment when the YAML file or additional dependencies and channels
+        has changed since the last build.
     allow_update
         If ``True``, attempt to update an existing environment. If ``False``,
         delete and recreate an existing environment.
     """
-    path_yml = env.yml_path
-    path_env = env.env_path
-    # Write the environment file we're going to install
-    env_dict = env_dict_with(
-        path_yml,
-        dependencies=env.additional_dependencies,
-        channels=env.additional_channels,
-    )
-    path_working_yml = path_env / ".soap_env-working.yml"
-    path_working_yml.write_text(yaml.dump(env_dict))
-    # Cache the environment file and only construct the environment if it has
-    # changed
-    path_cached_yml = path_env / ".soap_env.yml"
+    # Prepare the working environment file
+    path_working_yml = prepare_env_file(env)
+
+    # We need a path to cache our prepared environment to after building
+    path_cached_yml = env.env_path / ".soap_env.yml"
+
+    # Create the environment, or clean up what we've already prepared
     if (
         ignore_cache
         or (not path_cached_yml.exists())
@@ -71,15 +74,15 @@ def prepare_env(
     ):
         # Create the environment
         soap.conda.env_from_file(
-            path_working_yml,
-            path_env,
+            working_yml_path,
+            env.env_path,
             install_current=env.install_current,
             allow_update=allow_update,
         )
         # Cache the environment file we used
         path_working_yml.rename(path_cached_yml)
     else:
-        # Clean up
+        # Nothing to do, so clean up the files we made
         path_working_yml.unlink()
 
 
