@@ -16,7 +16,7 @@ from soap.config import DEFAULT_ENV
 NO_SUBCOMMAND_EXIT_CODE = 1
 """Exit code given when no subcommand is provided at command line"""
 
-CONSOLE = rich.Console()
+CONSOLE = rich.console.Console()
 
 
 def callback(func: Callable) -> Typer:
