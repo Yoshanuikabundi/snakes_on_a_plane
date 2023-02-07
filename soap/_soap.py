@@ -14,6 +14,10 @@ def add_pip_package(
 ):
     """
     Add package to all existing pip entries, or to a new entry if there are none
+
+    ``dependencies`` should be the ``"dependencies"`` entry of a Conda
+    environment YAML file. Conda seems to only install the first set of pip
+    dependencies, but we'll add to all in case this behavior changes.
     """
     n_pips = 0
     for entry in dependencies:
@@ -26,11 +30,12 @@ def add_pip_package(
 
 def prepare_env_file(env: Env) -> Dict:
     """
-    Prepare an environment file and write it to the returned path
+    Prepare an environment YAML file and return its contents
 
     The environment's name is augmented with a hash of the original file.
     Dependencies are appended to the dependency list, while channels are
-    preprended. Returns the name of the written file.
+    preprended. If ``install_current`` is set, it is added to the list of
+    installed pip packages.
     """
     # Get a hash of the input YAML file
     env_hash = hashlib.md5(env.yml_path.read_bytes()).hexdigest()
@@ -43,22 +48,14 @@ def prepare_env_file(env: Env) -> Dict:
     env_dict["channels"] = env.additional_channels + env_dict.get("channels", [])
     env_dict.setdefault("dependencies", []).extend(env.additional_dependencies)
 
-    # Add the current package if required
+    # Add the current package, in dev mode, if required
     if env.install_current:
         add_pip_package(
             f"-e {env.package_root}",
             env_dict["dependencies"],
         )
 
-    # Choose an output file name
-    path_out = env.env_path / ".soap_env-working.yml"
-
-    # Write the updated environment
-    path_out.parent.mkdir(exist_ok=True)
-    path_out.write_text(yaml.dump(env_dict))
-
-    # Return the output file name
-    return path_out
+    return yaml.dump(env_dict)
 
 
 def prepare_env(
@@ -83,19 +80,27 @@ def prepare_env(
         If ``True``, attempt to update an existing environment. If ``False``,
         delete and recreate an existing environment.
     """
-    # Prepare the working environment file
-    working_yaml_path = prepare_env_file(env)
+    # Create the destination directory if it does not exist
+    # Will only create a directory if we don't hit the cache
+    env.env_path.mkdir(exist_ok=True)
 
-    # We need a path to cache our prepared environment to after building
+    # Prepare the working environment file
+    # This file has all the changes we have made to the source YAML file.
+    working_yaml_path = env.env_path / ".soap_env-working.yml"
+    working_yaml_path.write_text(prepare_env_file(env))
+
+    # We need a path to cache our prepared environment YAML to after building,
+    # so that next time we can skip environment creation if nothing's changed.
     cached_yaml_path = env.env_path / ".soap_env.yml"
 
-    # Create the environment, or clean up what we've already prepared
+    # Create or update the environment, or clean up the above if we hit the
+    # cache
     if (
         ignore_cache
         or (not cached_yaml_path.exists())
         or (not filecmp.cmp(cached_yaml_path, working_yaml_path))
     ):
-        # Create the environment
+        # Create or update the environment
         soap.conda.env_from_file(
             working_yaml_path,
             env.env_path,
@@ -104,7 +109,10 @@ def prepare_env(
         # Cache the environment file we used
         working_yaml_path.rename(cached_yaml_path)
     else:
-        # Nothing to do, so clean up the files we made
+        # Cache hit - environment spec hasn't changed since last time.
+        # Nothing to do, so clean up the files we made.
+        # If the earlier ``mkdir()`` created a new folder, then we definitely
+        # didn't hit the cache, so we don't need to clean it up.
         working_yaml_path.unlink()
 
 
