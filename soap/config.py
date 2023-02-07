@@ -39,7 +39,7 @@ ENV_SCHEMA = Schema(
         Optional(
             Literal(
                 "install_current",
-                description="If True, install the current project in this environment.",
+                description="If True, install the current project in this environment after all dependencies.",
             ),
             default=True,
         ): bool,
@@ -236,14 +236,15 @@ class Env:
         self,
         name: str,
         value: Dict[str, Any],
-        env_root: Path,
+        package_root: Path,
     ):
         self.name: str = name
+        package_root = Path(package_root).absolute()
 
         self.yml_path = (
             value["yml_path"]
             if value["yml_path"].is_absolute()
-            else Path(env_root) / value["yml_path"]
+            else package_root / value["yml_path"]
         )
 
         self.env_path = (
@@ -252,7 +253,7 @@ class Env:
             else value["env_path"]
         )
         if not self.env_path.is_absolute():
-            self.env_path = Path(env_root) / self.env_path
+            self.env_path = package_root / self.env_path
 
         self.install_current = value["install_current"]
         self.additional_channels = value["additional_channels"]
@@ -264,7 +265,8 @@ class Env:
             + f"yml_path: {self.yml_path!r}, "
             + f"env_path: {self.env_path!r}, "
             + f"install_current: {self.install_current!r},"
-            + f"additional_packages: {self.additional_packages!r},"
+            + f"additional_channels: {self.additional_channels!r},"
+            + f"additional_dependencies: {self.additional_dependencies!r},"
             + f"}})"
         )
 
