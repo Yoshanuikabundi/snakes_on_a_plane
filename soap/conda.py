@@ -70,16 +70,16 @@ def env_from_file(
         Path to the prefix to create or update the Conda environment
     install_current
         If ``True``, the root directory of the current Git repository will be
-        installed in dev mode with `pip install -e`
+        installed in dev mode with ``pip install -e``
     allow_update
         If ``True``, attempt to update an existing environment. If ``False``,
         delete and recreate an existing environment.
     """
     env_path = Path(env_path)
-    if env_path.exists() and not allow_update:
-        rmtree(env_path)
 
-    if env_path.exists() and allow_update:
+    # Update the environment if allowed, otherwise clear the directory and
+    # recreate teh environment
+    if (env_path / "conda-meta").exists() and allow_update:
         conda(
             [
                 "env",
@@ -92,6 +92,16 @@ def env_from_file(
             ]
         )
     else:
+        # Delete the contents of the directory, except the conda environment
+        # YAML file (if present)
+        for subpath in env_path.iterdir():
+            if subpath.resolve() == Path(file).resolve():
+                continue
+            if subpath.is_dir():
+                rmtree(subpath)
+            else:
+                subpath.unlink()
+        # Create the new environment
         conda(
             [
                 "env",
