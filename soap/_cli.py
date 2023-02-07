@@ -16,6 +16,8 @@ from soap.config import DEFAULT_ENV
 NO_SUBCOMMAND_EXIT_CODE = 1
 """Exit code given when no subcommand is provided at command line"""
 
+CONSOLE = rich.Console()
+
 
 def callback(func: Callable) -> Typer:
     """Decorator to define a Typer with callback"""
@@ -40,10 +42,10 @@ def app(
     Snakes on a Plane: Cargo for Conda.
     """
     if version:
-        rich.print(f"Snakes On A Plane {soap.__version__}")
+        CONSOLE.print(f"Snakes On A Plane {soap.__version__}")
         raise typer.Exit()
     if ctx.invoked_subcommand is None:
-        rich.print("No subcommand given; for help, pass '--help'")
+        CONSOLE.print("No subcommand given; for help, pass '--help'")
         raise typer.Exit(NO_SUBCOMMAND_EXIT_CODE)
 
 
@@ -81,7 +83,7 @@ def main():
     try:
         app()
     except Exception as err:
-        rich.print("[red]Error:")
+        CONSOLE.print("[red]Error:")
         if os.environ.get("SOAP_DEBUG", ""):
             raise err
         else:
@@ -104,9 +106,11 @@ def update(
     """
     cfg = soap.Config()
     envs = cfg.envs.values() if env is None else [cfg.envs[env]]
-    rich.print(f"[cyan]Updating {len(envs)} environment{'s' if len(envs) != 1 else ''}")
+    CONSOLE.print(
+        f"[cyan]Updating {len(envs)} environment{'s' if len(envs) != 1 else ''}"
+    )
     for this_env in envs:
-        rich.print(
+        CONSOLE.print(
             f"[cyan]Preparing environment '{this_env.name}' "
             + f"from '{this_env.yml_path}' "
             + f"in '{this_env.env_path}'"
@@ -179,7 +183,7 @@ def list(
 
             table.add_row(*row)
 
-        rich.print(table)
+        CONSOLE.print(table)
     else:
         tree = rich.tree.Tree("[i]Snakes on a Plane environments", guide_style="dim")
 
@@ -202,7 +206,7 @@ def list(
                 syntax = rich.syntax.Syntax(env.yml_path.read_text(), "yaml")
                 yml_branch.add(syntax)
 
-        rich.print(tree)
+        CONSOLE.print(tree)
 
 
 _click = typer.main.get_command(app)
