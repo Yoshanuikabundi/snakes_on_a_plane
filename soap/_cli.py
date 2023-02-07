@@ -205,6 +205,13 @@ def list(
             if verbosity > 3:
                 syntax = rich.syntax.Syntax(env.yml_path.read_text(), "yaml")
                 yml_branch.add(syntax)
+            if verbosity > 4:
+                branch.add(
+                    f"[b]Command to update environment:[/b] [u]soap update --env {env.name}"
+                )
+                branch.add(
+                    f"[b]Command to recreate environment:[/b] [u]soap update --recreate --env {env.name}"
+                )
 
         CONSOLE.print(tree)
 
