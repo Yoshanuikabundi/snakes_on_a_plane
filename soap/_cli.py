@@ -73,7 +73,10 @@ def main():
         app()
     except Exception as err:
         echo("\033[31mError:\u001b[0m")
-        raise SystemExit(err)
+        if os.environ.get("SOAP_DEBUG", ""):
+            raise err
+        else:
+            raise SystemExit(err)
 
 
 @app.command()
