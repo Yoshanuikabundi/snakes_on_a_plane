@@ -23,6 +23,8 @@ def add_pip_package(
     for entry in dependencies:
         if isinstance(entry, dict) and "pip" in entry:
             n_pips += 1
+            if entry["pip"] is None:
+                entry["pip"] = []
             entry["pip"].append(package)
     if n_pips == 0:
         dependencies.append({"pip": [package]})
