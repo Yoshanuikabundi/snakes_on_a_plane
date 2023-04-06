@@ -30,7 +30,7 @@ def add_pip_package(
         dependencies.append({"pip": [package]})
 
 
-def prepare_env_file(env: Env) -> Dict:
+def prepare_env_file(env: Env) -> str:
     """
     Prepare an environment YAML file and return its contents
 
@@ -84,7 +84,7 @@ def prepare_env(
     """
     # Create the destination directory if it does not exist
     # Will only create a directory if we don't hit the cache
-    env.env_path.mkdir(exist_ok=True)
+    env.env_path.mkdir(parents=True, exist_ok=True)
 
     # Prepare the working environment file
     # This file has all the changes we have made to the source YAML file.
