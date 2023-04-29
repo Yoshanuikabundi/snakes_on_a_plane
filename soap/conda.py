@@ -73,41 +73,46 @@ def env_from_file(
     """
     env_path = Path(env_path)
 
-    # Update the environment if allowed, otherwise clear the directory and
-    # recreate teh environment
+    # Update the environment if allowed, and early return if successful
     if (env_path / "conda-meta").exists() and allow_update:
-        conda(
-            [
-                "env",
-                "update",
-                "--file",
-                str(file),
-                "--prefix",
-                str(env_path),
-                "--prune",
-            ]
-        )
-    else:
-        # Delete the contents of the directory, except the conda environment
-        # YAML file (if present)
-        for subpath in env_path.iterdir():
-            if subpath.resolve() == Path(file).resolve():
-                continue
-            if subpath.is_dir():
-                rmtree(subpath)
-            else:
-                subpath.unlink()
-        # Create the new environment
-        conda(
-            [
-                "env",
-                "create",
-                "--file",
-                str(file),
-                "--prefix",
-                str(env_path),
-            ]
-        )
+        try:
+            conda(
+                [
+                    "env",
+                    "update",
+                    "--file",
+                    str(file),
+                    "--prefix",
+                    str(env_path),
+                    "--prune",
+                ]
+            )
+        except sp.CalledProcessError:
+            pass
+        else:
+            return
+
+    # Delete the contents of the directory, except the conda environment
+    # YAML file (if present)
+    for subpath in env_path.iterdir():
+        if subpath.resolve() == Path(file).resolve():
+            continue
+        if subpath.is_dir():
+            rmtree(subpath)
+        else:
+            subpath.unlink()
+
+    # Create the new environment
+    conda(
+        [
+            "env",
+            "create",
+            "--file",
+            str(file),
+            "--prefix",
+            str(env_path),
+        ]
+    )
 
 
 def run_in_env(args: Sequence[str], env_path: Union[str, Path]):
