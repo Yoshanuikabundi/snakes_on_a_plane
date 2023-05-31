@@ -1,6 +1,6 @@
 """Configuration for Snakes on a Plane"""
 
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, List
 from soap.utils import get_git_root
 from soap.exceptions import MissingConfigFileError
 import toml
@@ -18,6 +18,9 @@ def _get_name(schema):
     while not isinstance(schema, str):
         schema = schema.schema
     return schema
+
+
+ROOT_DIR_KEY = "ROOT_DIR"
 
 
 DEFAULT_ENV = "test"
@@ -131,7 +134,7 @@ CFG_SCHEMA = Schema(
 CFG_SCHEMA_JSON = CFG_SCHEMA.json_schema("Snakes On A Plane: `soap.toml`")
 
 
-def _get_cfg_map(root_path: Path) -> Dict[str, Any]:
+def _get_cfg_map(leaf_path: Union[None, Path] = None) -> Dict[str, Any]:
     """
     Get the configuration map for SOAP
 
@@ -145,27 +148,80 @@ def _get_cfg_map(root_path: Path) -> Dict[str, Any]:
     ======
 
     MissingConfigFileError
-        If ``pyproject.toml`` and ``soap.toml`` are both missing from the root
-        path.
+        If no ``pyproject.toml`` and ``soap.toml`` files can be found by walking
+        up the file tree from leaf_path
     TomlDecodeError
-        If the file was found but is not valid TOML
+        If any discovered config file was not valid TOML
     SchemaError
-        If the config file is valid TOML but does not match the SOAP configuration
+        If a config file is valid TOML but does not match the SOAP configuration
         schema.
     """
-    pyproject_path = root_path / "pyproject.toml"
-    soaptoml_path = root_path / "soap.toml"
+    # Walk up the file tree looking for config files
+    leaf_path = (
+        Path(".").absolute() if leaf_path is None else Path(leaf_path).absolute()
+    )
+    pyproject_path = None  # Path to the pyproject.toml describing the project
+    root_path = None  # Root path of the project
+    soaptoml_paths = []  # Paths of all soap.toml files
+    for path in (leaf_path, *leaf_path.parents):
+        # Remember the top level pyproject file and record it as the root dir
+        pyproject = path / "pyproject.toml"
+        if pyproject.exists():
+            pyproject_path = pyproject
+            root_path = path
 
-    if soaptoml_path.exists():
-        data = toml.load(soaptoml_path)
-    elif pyproject_path.exists():
-        data = toml.load(pyproject_path)["tool"]["soap"]
-    else:
-        raise MissingConfigFileError(
-            f"pyproject.toml and soap.toml both missing from {root_path}"
+        # Remember all soap.toml files, and the directory of the topmost one if
+        # we don't have a better guess at the root path
+        soaptoml = path / "soap.toml"
+        if soaptoml.exists():
+            soaptoml_paths.append(soaptoml)
+            if pyproject_path is None:
+                root_path = path
+
+    # Try and get the git root directory, as its our best guess at the root
+    # directory
+    try:
+        root_path = get_git_root(".")
+    except Exception as e:
+        # TODO: Use a warning library for this
+        print(
+            "Running Git failed:",
+            e.__traceback__,
+            f"Using {root_path} as root directory",
+            sep="\n",
         )
 
-    return CFG_SCHEMA.validate(data)
+    # Raise an error if we haven't found any config files
+    if pyproject_path is None and len(soaptoml_paths) == 0:
+        raise MissingConfigFileError(
+            f"Couldn't find pyproject.toml or any soap.toml files searching up"
+            + f" the file tree from {leaf_path}"
+        )
+
+    # Load the data from all config files and combine them
+    data = _combine_cfg_maps([toml.load(path) for path in soaptoml_paths])
+    if pyproject_path:
+        pyproject_data = toml.load(pyproject_path)
+        pyproject_data.get("tool", {}).get("soap", {})
+        data = _combine_cfg_maps([data, pyproject_data])
+
+    # Validate against the schema
+    data = CFG_SCHEMA.validate(data)
+
+    # Make sure we haven't added an entry with this name to the config schema,
+    # then add the root path to the data
+    assert ROOT_DIR_KEY not in (k.key for k in CFG_SCHEMA.schema)
+    data[ROOT_DIR_KEY] = root_path
+
+    return data
+
+
+def _combine_cfg_maps(data: List[Dict[str, None]]):
+    """Combine a list of toml data files into one
+
+    At the moment this just returns the first dictionary."""
+    # TODO: Combine multiple dictionaries
+    return data[0]
 
 
 class Config:
@@ -196,17 +252,15 @@ class Config:
 
     def __init__(
         self,
-        git_root: Union[Path, None] = None,
+        leaf_path: Union[Path, None] = None,
         cfg: Union[Dict[str, Any], None] = None,
     ):
-        if git_root is None:
-            git_root = get_git_root(".")
-
         if cfg is None:
-            cfg = _get_cfg_map(git_root)
+            cfg = _get_cfg_map(leaf_path)
 
+        self.root_dir = cfg[ROOT_DIR_KEY]
         self.envs = {
-            name: Env(name, value, git_root) for name, value in cfg["envs"].items()
+            name: Env(name, value, self.root_dir) for name, value in cfg["envs"].items()
         }
         self.aliases = [Alias(name, value) for name, value in cfg["aliases"].items()]
 

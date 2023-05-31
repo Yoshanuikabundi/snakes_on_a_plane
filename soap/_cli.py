@@ -10,7 +10,6 @@ from typer import Argument, Option, Typer
 import rich, rich.tree
 
 import soap
-from soap.utils import get_git_root
 from soap.config import DEFAULT_ENV
 
 NO_SUBCOMMAND_EXIT_CODE = 1
@@ -75,7 +74,7 @@ def main():
             passthrough_args: bool = Option(alias.passthrough_args, hidden=True),
         ):
             if chdir:
-                os.chdir(get_git_root("."))
+                os.chdir(cfg.root_dir)
             if passthrough_args:
                 command = " ".join([command, *ctx.args])
             run(args=command, env=env)

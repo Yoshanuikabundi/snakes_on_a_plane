@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Sequence, Dict, Optional, Union
 from shutil import which, rmtree
 import subprocess as sp
-from soap.utils import get_git_root
 
 __all__ = ["conda", "env_from_file", "run_in_env"]
 

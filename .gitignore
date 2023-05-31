@@ -106,5 +106,8 @@ ENV/
 # There are reports this comes from LLVM profiling, but also Xcode 9.
 *profraw
 
+# MacOS
+.DS_Store
+
 # snakes on a plane
 .soap/
