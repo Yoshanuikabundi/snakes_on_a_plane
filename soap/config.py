@@ -74,10 +74,14 @@ ALIAS_SCHEMA = Schema(
         Optional(
             Literal(
                 "chdir",
-                description="If True, always run this command in the git repository root directory.",
+                description=(
+                    "Where to run the command. True for the git repository root"
+                    + " directory, False for the working directory, or a path"
+                    + " relative to the root directory.",
+                ),
             ),
             default=False,
-        ): bool,
+        ): Or(bool, And(str, Use(Path))),
         Optional(
             Literal(
                 "env",
@@ -262,7 +266,9 @@ class Config:
         self.envs = {
             name: Env(name, value, self.root_dir) for name, value in cfg["envs"].items()
         }
-        self.aliases = [Alias(name, value) for name, value in cfg["aliases"].items()]
+        self.aliases = [
+            Alias(name, value, self.root_dir) for name, value in cfg["aliases"].items()
+        ]
 
     def __repr__(self):
         return f"<Config with aliases {self.aliases!r} and envs {self.envs!r}>"
@@ -349,10 +355,18 @@ class Alias:
         self,
         name,
         value: Dict[str, Any],
+        root_dir: Path,
     ):
         self.name = name
         self.command = value["cmd"]
-        self.chdir = value["chdir"]
+
+        if not value["chdir"]:
+            self.chdir = None
+        elif value["chdir"] is True:
+            self.chdir = root_dir
+        else:
+            self.chdir = root_dir / value["chdir"]
+
         self.default_env = value["env"]
         self.description = value["description"] or "Alias for `" + self.command + "`"
         self.passthrough_args = value["passthrough_args"]

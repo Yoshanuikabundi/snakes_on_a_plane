@@ -67,14 +67,24 @@ def main():
         def _(
             ctx: typer.Context,
             env: str = Option(
-                alias.default_env, help="Environment in which to run the command"
+                alias.default_env,
+                help="Environment in which to run the command",
             ),
-            chdir: bool = Option(alias.chdir, hidden=True),
-            command: str = Option(alias.command, hidden=True),
-            passthrough_args: bool = Option(alias.passthrough_args, hidden=True),
+            chdir: Optional[str] = Option(
+                None if alias.chdir is None else str(alias.chdir),
+                hidden=True,
+            ),
+            command: str = Option(
+                alias.command,
+                hidden=True,
+            ),
+            passthrough_args: bool = Option(
+                alias.passthrough_args,
+                hidden=True,
+            ),
         ):
             if chdir:
-                os.chdir(cfg.root_dir)
+                os.chdir(chdir)
             if passthrough_args:
                 command = " ".join([command, *ctx.args])
             run(args=command, env=env)
