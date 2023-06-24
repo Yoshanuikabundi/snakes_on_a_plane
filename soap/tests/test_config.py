@@ -34,6 +34,13 @@ MAXIMALIST_VALIDATED = {
             "additional_channels": [],
             "additional_dependencies": [],
         },
+        "gromacs": {
+            "yml_path": Path("devtools/conda-envs/user_env.yml"),
+            "env_path": None,
+            "install_current": True,
+            "additional_channels": ["bioconda"],
+            "additional_dependencies": ["gromacs"],
+        },
     },
     "aliases": {
         "list": {
@@ -57,6 +64,13 @@ MAXIMALIST_VALIDATED = {
             "description": "Build the docs with Sphinx",
             "passthrough_args": True,
         },
+        "npm": {
+            "cmd": "npm",
+            "chdir": Path("js"),
+            "env": "user",
+            "description": "",
+            "passthrough_args": True,
+        },
     },
 }
 
@@ -78,3 +92,6 @@ def test_maximalist_cfg():
     assert config.envs["test"].env_path == root_dir / ".soap/test"
     assert config.envs["docs"].env_path == root_dir / ".soap/docs"
     assert config.envs["user"].env_path == Path("/home/someone/conda/envs/soap-env")
+
+    alias_dict = {alias.name: alias for alias in config.aliases}
+    assert alias_dict["docs"].chdir == root_dir

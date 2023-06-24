@@ -7,6 +7,11 @@ yml_path = "devtools/conda-envs/user_env.yml"
 env_path = "/home/someone/conda/envs/soap-env"
 install_current = true
 
+[envs.gromacs]
+yml_path = "devtools/conda-envs/user_env.yml"
+additional_channels = ["bioconda"]
+additional_dependencies = ["gromacs"]
+
 [aliases]
 list = "conda list"
 greet = "echo hello world"
@@ -17,3 +22,10 @@ chdir = true
 env = "docs"
 description = "Build the docs with Sphinx"
 passthrough_args = true
+
+[aliases.npm]
+cmd = "npm"
+chdir = "js"
+env = "user"
+passthrough_args = true
+

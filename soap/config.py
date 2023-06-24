@@ -360,6 +360,7 @@ class Alias:
         self.name = name
         self.command = value["cmd"]
 
+        self.chdir: Path | None
         if not value["chdir"]:
             self.chdir = None
         elif value["chdir"] is True:
