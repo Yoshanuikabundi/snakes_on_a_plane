@@ -8,6 +8,7 @@ import yaml
 
 import soap.conda
 from soap.config import Env
+from soap.utils import yaml_file_to_dict, dict_to_yaml_str
 
 
 def add_pip_package(
@@ -45,7 +46,7 @@ def prepare_env_file(env: Env) -> str:
     env_hash = hashlib.md5(env.yml_path.read_bytes()).hexdigest()
 
     # Read the YAML file in to a dict
-    env_dict = yaml.safe_load(env.yml_path.read_text())
+    env_dict = yaml_file_to_dict(env.yml_path)
 
     # Update the name, channels and dependencies of the environment
     env_dict["name"] = env_dict.get("name", "") + "." + env_hash
@@ -59,7 +60,7 @@ def prepare_env_file(env: Env) -> str:
             env_dict["dependencies"],
         )
 
-    return yaml.dump(env_dict, indent=4)
+    return dict_to_yaml_str(env_dict)
 
 
 def prepare_env(
