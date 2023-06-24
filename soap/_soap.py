@@ -1,11 +1,13 @@
 from pathlib import Path
 from typing import Dict, List, Sequence, Optional, Union
 import hashlib
-import soap.conda
-from soap.config import Env
 import shutil
 import filecmp
+
 import yaml
+
+import soap.conda
+from soap.config import Env
 
 
 def add_pip_package(
@@ -63,7 +65,6 @@ def prepare_env_file(env: Env) -> str:
 def prepare_env(
     env: Env,
     ignore_cache: bool = False,
-    allow_update: bool = True,
 ):
     """
     Prepare the provided environment
@@ -78,9 +79,6 @@ def prepare_env(
         suggests it is up-to-date. If ``False``, only rebuild or update the
         environment when the YAML file or additional dependencies and channels
         has changed since the last build.
-    allow_update
-        If ``True``, attempt to update an existing environment. If ``False``,
-        delete and recreate an existing environment.
     """
     # Create the parent destination directory if it does not exist
     env.env_path.parent.mkdir(parents=True, exist_ok=True)
@@ -112,7 +110,6 @@ def prepare_env(
         soap.conda.env_from_file(
             working_yaml_path,
             env.env_path,
-            allow_update=allow_update,
         )
         # Cache the environment file we used
         working_yaml_path.rename(cached_yaml_path)

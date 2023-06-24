@@ -62,7 +62,6 @@ def conda(
 def env_from_file(
     file: Union[str, Path],
     env_path: Union[str, Path],
-    allow_update: bool = True,
 ):
     """
     Create or update an enviroment from a Conda environment YAML file
@@ -74,36 +73,14 @@ def env_from_file(
         Path to the Conda environment YAML file
     env_path
         Path to the prefix to create or update the Conda environment
-    allow_update
-        If ``True``, attempt to update an existing environment. If ``False``,
-        delete and recreate an existing environment.
     """
     env_path = Path(env_path)
-
-    # Update the environment if allowed, and early return if successful
-    if allow_update and env_path.exists():
-        try:
-            conda(
-                [
-                    "update",
-                    "--file",
-                    str(file),
-                    "--prefix",
-                    str(env_path),
-                    "--no-prune",
-                    "--yes",
-                ]
-            )
-        except sp.CalledProcessError:
-            print("Updating environment in place failed; creating new environment.")
-        else:
-            return
 
     # Clean up any existing environment directory
     if env_path.exists():
         rmtree(env_path)
 
-    # Create the new environment
+    # Recreate the new environment
     conda(
         [
             "create",
