@@ -45,12 +45,16 @@ def conda(
     if cmd is None:
         if "MAMBA_EXE" in env:
             cmd = env["MAMBA_EXE"]
+        elif which("micromamba") is not None:
+            cmd = "micromamba"
         elif which("mamba") is not None:
             cmd = "mamba"
-        if "CONDA_EXE" in env:
+        elif "CONDA_EXE" in env:
             cmd = env["CONDA_EXE"]
-        else:
+        elif which("conda") is not None:
             cmd = "conda"
+        else:
+            raise ValueError("No conda binary found")
     return sp.run([cmd, *args], check=True, text=True, input=stdin, env=env)
 
 
