@@ -90,7 +90,8 @@ def env_from_file(
                     str(file),
                     "--prefix",
                     str(env_path),
-                    "--prune",
+                    "--no-prune",
+                    "--yes",
                 ]
             )
         except sp.CalledProcessError:
@@ -110,6 +111,7 @@ def env_from_file(
             str(file),
             "--prefix",
             str(env_path),
+            "--yes",
         ]
     )
 
