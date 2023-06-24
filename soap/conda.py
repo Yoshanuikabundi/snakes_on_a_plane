@@ -55,6 +55,7 @@ def conda(
             cmd = "conda"
         else:
             raise ValueError("No conda binary found")
+
     return sp.run([cmd, *args], check=True, text=True, input=stdin, env=env)
 
 
@@ -80,11 +81,10 @@ def env_from_file(
     env_path = Path(env_path)
 
     # Update the environment if allowed, and early return if successful
-    if (env_path / "conda-meta").exists() and allow_update:
+    if allow_update and env_path.exists():
         try:
             conda(
                 [
-                    "env",
                     "update",
                     "--file",
                     str(file),
@@ -94,24 +94,17 @@ def env_from_file(
                 ]
             )
         except sp.CalledProcessError:
-            pass
+            print("Updating environment in place failed; creating new environment.")
         else:
             return
 
-    # Delete the contents of the directory, except the conda environment
-    # YAML file (if present)
-    for subpath in env_path.iterdir():
-        if subpath.resolve() == Path(file).resolve():
-            continue
-        if subpath.is_dir():
-            rmtree(subpath)
-        else:
-            subpath.unlink()
+    # Clean up any existing environment directory
+    if env_path.exists():
+        rmtree(env_path)
 
     # Create the new environment
     conda(
         [
-            "env",
             "create",
             "--file",
             str(file),
@@ -136,9 +129,10 @@ def run_in_env(args: Sequence[str], env_path: Union[str, Path]):
     conda(
         [
             "run",
-            "--prefix",
-            str(env_path),
-            "--no-capture-output",
+            f"--prefix={env_path}",
+            f"--attach=STDIN",
+            f"--attach=STDOUT",
+            f"--attach=STDERR",
             *args,
         ]
     )

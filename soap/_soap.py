@@ -82,23 +82,29 @@ def prepare_env(
         If ``True``, attempt to update an existing environment. If ``False``,
         delete and recreate an existing environment.
     """
-    # Create the destination directory if it does not exist
-    # Will only create a directory if we don't hit the cache
-    env.env_path.mkdir(parents=True, exist_ok=True)
+    # Create the parent destination directory if it does not exist
+    env.env_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Prepare the working environment file
     # This file has all the changes we have made to the source YAML file.
-    working_yaml_path = env.env_path / ".soap_env-working.yml"
+    # We can't store this in the nascent environment directory because
+    # micromamba will complain; however, this file will get cleaned up by the
+    # end of the function so it's ok to put it in the parent.
+    working_yaml_path = (
+        env.env_path.parent / ".soap_env-working-{env.env_path.name}.yml"
+    )
     working_yaml_path.write_text(prepare_env_file(env))
 
     # We need a path to cache our prepared environment YAML to after building,
     # so that next time we can skip environment creation if nothing's changed.
+    # This CAN go in the environment directory.
     cached_yaml_path = env.env_path / ".soap_env.yml"
 
     # Create or update the environment, or clean up the above if we hit the
     # cache
     if (
         ignore_cache
+        or (not env.env_path.exists())
         or (not cached_yaml_path.exists())
         or (not filecmp.cmp(cached_yaml_path, working_yaml_path))
     ):
