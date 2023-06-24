@@ -35,6 +35,7 @@ jobs:
 
     # More info on options: https://github.com/conda-incubator/setup-miniconda
     - if: matrix.conda == 'conda'
+      name: Install Conda
       uses: conda-incubator/setup-miniconda@v2
       with:
         python-version: ${{ matrix.python-version }}
@@ -49,6 +50,7 @@ jobs:
         show-channel-urls: true
 
     - if: matrix.conda == 'mamba'
+      name: Install Mamba
       uses: conda-incubator/setup-miniconda@v2
       with:
         python-version: ${{ matrix.python-version }}
@@ -63,6 +65,7 @@ jobs:
         show-channel-urls: true
 
     - if: matrix.conda == 'micromamba'
+      name: Install Micromamba
       uses: mamba-org/setup-micromamba@v1
       with:
         init-shell: >-
