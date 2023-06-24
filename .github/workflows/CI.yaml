@@ -13,7 +13,7 @@ on:
 
 jobs:
   test:
-    name: Tests on ${{ matrix.os }} 🐍 ${{ matrix.python-version }} ${{matrix.conda}}
+    name: Tests on ${{ matrix.os }} ${{matrix.conda}} 🐍 ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -29,17 +29,8 @@ jobs:
             conda: 'micromamba'
             python-version: 3.9
 
-
     steps:
     - uses: actions/checkout@v1
-
-    - name: Additional info about the build
-      shell: bash
-      run: |
-        uname -a
-        df -h
-        ulimit -a
-
 
     # Install conda/mamba/micromamba, but do not activate; we want to install with non-conda Python
     - if: matrix.conda == 'conda'
