@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macOS-latest, ubuntu-latest]
+        os: [macOS-latest, ubuntu-latest, windows-latest]
         python-version: [3.9]
         conda: ['micromamba', 'mamba', 'conda']
 
@@ -33,22 +33,18 @@ jobs:
         ulimit -a
 
 
-    # More info on options: https://github.com/conda-incubator/setup-miniconda
+    # Install conda/mamba/micromamba, but do not activate; we want to install with non-conda Python
     - if: matrix.conda == 'conda'
       name: Install Conda
-      uses: conda-incubator/setup-miniconda@v2
+      uses: conda-incubator/setup-miniconda@v2 # https://github.com/conda-incubator/setup-miniconda
       with:
         python-version: ${{ matrix.python-version }}
         environment-file: devtools/conda-envs/pip_env.yml
         miniforge-variant: "Miniforge3"
 
-        channels: conda-forge,defaults
-
-        activate-environment: test
+        activate-environment: ''
         auto-update-conda: false
         auto-activate-base: false
-        show-channel-urls: true
-
     - if: matrix.conda == 'mamba'
       name: Install Mamba
       uses: conda-incubator/setup-miniconda@v2
@@ -57,22 +53,22 @@ jobs:
         environment-file: devtools/conda-envs/pip_env.yml
         miniforge-variant: "Mambaforge"
 
-        channels: conda-forge,defaults
-
-        activate-environment: test
+        activate-environment: ''
         auto-update-conda: false
         auto-activate-base: false
-        show-channel-urls: true
-
     - if: matrix.conda == 'micromamba'
       name: Install Micromamba
-      uses: mamba-org/setup-micromamba@v1
+      uses: mamba-org/setup-micromamba@v1 # https://github.com/mamba-org/setup-micromamba
       with:
         environment-file: devtools/conda-envs/pip_env.yml
         init-shell: >-
           bash
           powershell
-        post-cleanup: 'all'
+
+    # Install non-conda Python
+    - uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
 
     - name: Install package
       shell: bash -l {0}
