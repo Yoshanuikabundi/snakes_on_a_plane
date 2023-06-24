@@ -57,7 +57,7 @@ def prepare_env_file(env: Env) -> str:
             env_dict["dependencies"],
         )
 
-    return yaml.dump(env_dict)
+    return yaml.dump(env_dict, indent=4)
 
 
 def prepare_env(
