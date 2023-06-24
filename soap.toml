@@ -2,6 +2,7 @@
 test = "devtools/conda-envs/test_env.yml"
 user = "devtools/conda-envs/user_env.yml"
 docs = "devtools/conda-envs/docs_env.yml"
+pip = "devtools/conda-envs/pip_env.yml"
 
 [aliases]
 greet = "echo hello world"

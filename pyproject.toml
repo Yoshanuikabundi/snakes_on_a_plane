@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools >= 61.0.0", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "soap"
+authors = [
+    {name = "Josh A. Mitchell", email = "joshua.mitchell.au@gmail.com"}
+]
+description = "Conda meets Cargo"
+readme = {file = "README.md", content-type = "text/markdown"}
+requires-python = ">=3.9" # See https://numpy.org/neps/nep-0029-deprecation_policy.html
+keywords = ["conda", "mamba", "venv", "runner", "build"]
+license = { file = "LICENSE" }
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+  "gitpython",
+  "toml",
+  "typer[all]>=0.6",
+  "schema",
+  "pyyaml",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-cov",
+    "codecov",
+]
+docs = [
+    "sphinx >=4.5,<5.0",
+    "sphinx_rtd_theme",
+    "myst-parser>=0.13.6,<0.19.0",
+    "sphinx-notfound-page",
+    "sphinx-click",
+    "sphinx-jsonschema",
+]
+
+[project.urls]
+Homepage = "https://github.com/Yoshanuikabundi/snakes_on_a_plane"
+Documentation = "https://snakesonaplane.readthedocs.io/"
+Repository = "https://github.com/Yoshanuikabundi/snakes_on_a_plane"
+
+[project.scripts]
+soap = "soap._cli:main"
+
+[tool.setuptools]
+packages = ["soap"]
+
+[tool.setuptools_scm]
+write_to = "soap/_version.py"
