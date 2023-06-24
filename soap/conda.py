@@ -43,9 +43,12 @@ def conda(
     env = dict(environ) if env is None else env
 
     if cmd is None:
-        if which("mamba") is not None:
+        if "MAMBA_EXE" in env:
+            cmd = env["MAMBA_EXE"]
+        elif which("mamba") is not None:
             cmd = "mamba"
-            env["MAMBA_NO_BANNER"] = "1"
+        if "CONDA_EXE" in env:
+            cmd = env["CONDA_EXE"]
         else:
             cmd = "conda"
     return sp.run([cmd, *args], check=True, text=True, input=stdin, env=env)
