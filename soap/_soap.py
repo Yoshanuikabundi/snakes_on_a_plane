@@ -91,7 +91,7 @@ def prepare_env(
     # micromamba will complain; however, this file will get cleaned up by the
     # end of the function so it's ok to put it in the parent.
     working_yaml_path = (
-        env.env_path.parent / ".soap_env-working-{env.env_path.name}.yml"
+        env.env_path.parent / f".soap_env-working-{env.env_path.name}.yml"
     )
     working_yaml_path.write_text(prepare_env_file(env))
 
