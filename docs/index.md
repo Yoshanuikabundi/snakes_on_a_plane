@@ -38,7 +38,7 @@ caption: User Guide
 The autosummary directive renders to rST,
 so we must use eval-rst here
 -->
-:::{eval-rst}
+```{eval-rst}
 .. raw:: html
 
     <div style="display: None">
@@ -54,4 +54,4 @@ so we must use eval-rst here
 .. raw:: html
 
     </div>
-:::
+```

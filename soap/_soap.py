@@ -53,7 +53,7 @@ def prepare_env_file(env: Env) -> str:
     # Add the current package, in dev mode, if required
     if env.install_current:
         add_pip_package(
-            f"-e {env.package_root}",
+            f"-e {env.package_root}[all]",
             env_dict["dependencies"],
         )
 
