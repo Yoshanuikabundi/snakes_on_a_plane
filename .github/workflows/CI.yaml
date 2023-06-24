@@ -24,8 +24,10 @@ jobs:
         include:
           - os: 'macos-latest'
             conda: 'micromamba'
+            python-version: 3.9
           - os: 'windows-latest'
             conda: 'micromamba'
+            python-version: 3.9
 
 
     steps:
