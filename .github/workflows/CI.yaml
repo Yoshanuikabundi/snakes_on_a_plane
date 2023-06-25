@@ -62,6 +62,14 @@ jobs:
           bash
           powershell
 
+    - name: Get conda/mamba/micromamba info
+      shell: bash -l {0}
+      run: |
+        ${{ matrix.conda }} --help
+        ${{ matrix.conda }} create --help
+        ${{ matrix.conda }} run --help
+        ${{ matrix.conda }} env create --help
+
     # Install non-conda Python
     - uses: actions/setup-python@v4
       with:

@@ -6,10 +6,10 @@ from typing import Sequence, Dict, Optional, Union
 from shutil import which, rmtree
 import subprocess as sp
 
-__all__ = ["conda", "env_from_file", "run_in_env"]
+__all__ = ["env_from_file", "run_in_env"]
 
 
-def conda(
+def _conda(
     args: Sequence[str],
     *,
     stdin: Optional[str] = None,
@@ -81,7 +81,7 @@ def env_from_file(
         rmtree(env_path)
 
     # Recreate the new environment
-    conda(
+    _conda(
         [
             "create",
             "--file",
@@ -105,7 +105,7 @@ def run_in_env(args: Sequence[str], env_path: Union[str, Path]):
     env_path
         The path to the prefix of the environment.
     """
-    conda(
+    _conda(
         [
             "run",
             f"--prefix={env_path}",
