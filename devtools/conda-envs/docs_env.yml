@@ -1,7 +1,6 @@
 name: docs
 channels:
   - conda-forge
-  - defaults
 dependencies:
   # Base depends
   - python
@@ -15,9 +14,9 @@ dependencies:
   - pyyaml
 
   # Docs depends
-  - sphinx >=4.5,<5.0
+  - sphinx~=6.0.0
   - sphinx_rtd_theme
-  - myst-parser>=0.13.6
+  - myst-parser~=1.0.0
   - sphinx-notfound-page
   - sphinx-click
-  - sphinx-jsonschema 
+  - sphinx-jsonschema

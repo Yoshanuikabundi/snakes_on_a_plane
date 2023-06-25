@@ -1,72 +1,94 @@
 name: CI
 
 on:
-  # GitHub has started calling new repo's first branch "main" https://github.com/github/renaming
-  # Existing codes likely still have "master" as the primary branch
-  # Both are tracked here to keep legacy and new codes working
   push:
     branches:
-      - "master"
       - "main"
   pull_request:
     branches:
-      - "master"
       - "main"
   schedule:
-    # Nightly tests run on master by default:
-    #   Scheduled workflows run on the latest commit on the default or base branch.
-    #   (from https://help.github.com/en/actions/reference/events-that-trigger-workflows#scheduled-events-schedule)
+    # Nightly tests run on main by default
     - cron: "0 0 * * *"
 
 jobs:
   test:
-    name: Test on ${{ matrix.os }}, Python ${{ matrix.python-version }}
+    name: Tests on ${{ matrix.os }} ${{matrix.conda}} 🐍 ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [macOS-latest, ubuntu-latest, windows-latest]
-        python-version: [3.7, 3.8, 3.9]
+        os: [ubuntu-latest]
+        python-version: [3.9]
+        conda: ['micromamba', 'mamba', 'conda']
+        include:
+          - os: 'macos-latest'
+            conda: 'micromamba'
+            python-version: 3.9
+          - os: 'windows-latest'
+            conda: 'micromamba'
+            python-version: 3.9
 
     steps:
     - uses: actions/checkout@v1
 
-    - name: Additional info about the build
-      shell: bash
-      run: |
-        uname -a
-        df -h
-        ulimit -a
-
-
-    # More info on options: https://github.com/conda-incubator/setup-miniconda
-    - uses: conda-incubator/setup-miniconda@v2
+    # Install conda/mamba/micromamba, but do not activate; we want to install with non-conda Python
+    - if: matrix.conda == 'conda'
+      name: Install Conda
+      uses: conda-incubator/setup-miniconda@v2 # https://github.com/conda-incubator/setup-miniconda
       with:
-        python-version: ${{ matrix.python-version }}
-        environment-file: devtools/conda-envs/test_env.yml
+        environment-file: devtools/conda-envs/pip_env.yml
+        miniforge-variant: "Miniforge3"
 
-        channels: conda-forge,defaults
-
-        activate-environment: test
+        activate-environment: ''
         auto-update-conda: false
         auto-activate-base: false
-        show-channel-urls: true
+    - if: matrix.conda == 'mamba'
+      name: Install Mamba
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        environment-file: devtools/conda-envs/pip_env.yml
+        miniforge-variant: "Mambaforge"
+
+        activate-environment: ''
+        auto-update-conda: false
+        auto-activate-base: false
+    - if: matrix.conda == 'micromamba'
+      name: Install Micromamba
+      uses: mamba-org/setup-micromamba@v1 # https://github.com/mamba-org/setup-micromamba
+      with:
+        environment-file: devtools/conda-envs/pip_env.yml
+        init-shell: >-
+          bash
+          powershell
+
+    - name: Get conda/mamba/micromamba info
+      shell: bash -l {0}
+      run: |
+        ${{ matrix.conda }} --help
+        ${{ matrix.conda }} create --help
+        ${{ matrix.conda }} run --help
+        ${{ matrix.conda }} env create --help
+
+    # Install non-conda Python
+    - uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
 
     - name: Install package
-
-      # conda setup requires this special shell
       shell: bash -l {0}
       run: |
-        python -m pip install . --no-deps
-        conda list
-
+        python -m pip install .[test]
 
     - name: Run tests
-
-      # conda setup requires this special shell
       shell: bash -l {0}
-
       run: |
         pytest -v --cov=soap --cov-report=xml --color=yes soap/tests/
+
+    - name: Run tests with SOAP
+      shell: bash -l {0}
+      run: |
+        soap test
 
     - name: CodeCov
       uses: codecov/codecov-action@v1

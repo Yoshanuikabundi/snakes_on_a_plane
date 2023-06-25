@@ -6,6 +6,8 @@ Tests for the config module
 import pytest
 import toml
 from pathlib import Path
+from copy import deepcopy
+from typing import Any
 
 import soap.config as cfg
 
@@ -15,16 +17,29 @@ MAXIMALIST_VALIDATED = {
             "yml_path": Path("devtools/conda-envs/test_env.yml"),
             "env_path": None,
             "install_current": True,
+            "additional_channels": [],
+            "additional_dependencies": [],
         },
         "docs": {
             "yml_path": Path("devtools/conda-envs/docs_env.yml"),
             "env_path": None,
             "install_current": False,
+            "additional_channels": [],
+            "additional_dependencies": [],
         },
         "user": {
             "yml_path": Path("devtools/conda-envs/user_env.yml"),
             "env_path": Path("/home/someone/conda/envs/soap-env"),
             "install_current": True,
+            "additional_channels": [],
+            "additional_dependencies": [],
+        },
+        "gromacs": {
+            "yml_path": Path("devtools/conda-envs/user_env.yml"),
+            "env_path": None,
+            "install_current": True,
+            "additional_channels": ["bioconda"],
+            "additional_dependencies": ["gromacs"],
         },
     },
     "aliases": {
@@ -32,14 +47,14 @@ MAXIMALIST_VALIDATED = {
             "cmd": "conda list",
             "chdir": False,
             "env": "test",
-            "description": None,
+            "description": "",
             "passthrough_args": False,
         },
         "greet": {
             "cmd": "echo hello world",
             "chdir": False,
             "env": "test",
-            "description": None,
+            "description": "",
             "passthrough_args": False,
         },
         "docs": {
@@ -47,6 +62,13 @@ MAXIMALIST_VALIDATED = {
             "chdir": True,
             "env": "docs",
             "description": "Build the docs with Sphinx",
+            "passthrough_args": True,
+        },
+        "npm": {
+            "cmd": "npm",
+            "chdir": Path("js"),
+            "env": "user",
+            "description": "",
             "passthrough_args": True,
         },
     },
@@ -61,8 +83,15 @@ def test_maximalist_toml():
 
 
 def test_maximalist_cfg():
-    git_root = Path("/home/someone/project/")
-    config = cfg.Config(cfg=MAXIMALIST_VALIDATED, git_root=git_root)
-    assert config.envs["test"].env_path == git_root / ".soap/test"
-    assert config.envs["docs"].env_path == git_root / ".soap/docs"
+    root_dir = Path("/home/someone/project")
+
+    config_dict: Any = deepcopy(MAXIMALIST_VALIDATED)
+    config_dict[cfg.ROOT_DIR_KEY] = root_dir
+    config = cfg.Config(cfg=config_dict)
+
+    assert config.envs["test"].env_path == root_dir / ".soap/test"
+    assert config.envs["docs"].env_path == root_dir / ".soap/docs"
     assert config.envs["user"].env_path == Path("/home/someone/conda/envs/soap-env")
+
+    alias_dict = {alias.name: alias for alias in config.aliases}
+    assert alias_dict["docs"].chdir == root_dir

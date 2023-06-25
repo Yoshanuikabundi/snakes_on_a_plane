@@ -41,7 +41,7 @@ def app(
     Snakes on a Plane: Cargo for Conda.
     """
     if version:
-        CONSOLE.print(f"Snakes On A Plane {soap.__version__}")
+        CONSOLE.print(f"Snakes On A Plane {soap.VERSION}")
         raise typer.Exit()
     if ctx.invoked_subcommand is None:
         CONSOLE.print("No subcommand given; for help, pass '--help'")
@@ -105,10 +105,6 @@ def update(
         None,
         help="Environment to update. If not specified, all environments will be updated.",
     ),
-    recreate: bool = Option(
-        False,
-        help="Delete and recreate the environment(s), rather than attempting to update in place",
-    ),
 ):
     """
     Update Conda environments.
@@ -127,7 +123,6 @@ def update(
         soap.prepare_env(
             this_env,
             ignore_cache=True,
-            allow_update=not recreate,
         )
 
 

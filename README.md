@@ -62,6 +62,28 @@ SOAP will always check that the environment is correct before running aliases, j
 [Conda]: https://conda.io
 [Cargo]: https://doc.rust-lang.org/cargo/
 
+## Installation
+
+I recommend installing [`pipx`] and [`micromamba`] with your system package manager, and then installing SOAP with `pipx`. This will give you a fast, easy to manage Conda installation and will avoid installing anything in your system Python distribution. For example, with the Paru package manager for Arch Linux:
+
+```shell
+paru -Syu python-pipx micromamba-bin
+git clone https://github.com/Yoshanuikabundi/snakes_on_a_plane.git
+cd snakes_on_a_plane
+pipx install .
+```
+
+If you have an existing Mamba or Conda installation, SOAP should be able to detect and use it - just install `pipx` and SOAP.
+
+If you're using Conda, I highly recommend Mamba - it's much faster than Conda, can solve environments that Conda can't, and has an identical API. Install it with:
+
+```shell
+conda install -n base mamba
+```
+
+[`pipx`]: https://pypa.github.io/pipx/
+[`micromamba`]: https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html
+
 ## Copyright
 
 Copyright (c) 2021, Josh Mitchell (Yoshanuikabundi)
