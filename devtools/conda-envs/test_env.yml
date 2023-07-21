@@ -11,7 +11,7 @@ dependencies:
   - gitpython
   - toml
   - typer[all]>=0.6
-  - schema
+  - pydantic~=2.0.0
   - pyyaml
 
   # Testing
