@@ -20,7 +20,7 @@ dependencies = [
   "gitpython",
   "toml",
   "typer[all]>=0.6",
-  "schema",
+  "pydantic~=2.0.0",
   "pyyaml",
 ]
 dynamic = ["version"]
@@ -37,7 +37,7 @@ docs = [
     "myst-parser~=1.0.0",
     "sphinx-notfound-page",
     "sphinx-click",
-    "sphinx-jsonschema",
+    "autodoc_pydantic",
 ]
 all=["soap[test,docs]"]
 

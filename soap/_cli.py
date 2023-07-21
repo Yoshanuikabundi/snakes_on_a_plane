@@ -52,11 +52,11 @@ def main():
     """Entry point for Snakes on a Plane.
 
     Generates commands for aliases and catches and simplifies errors."""
-    cfg = soap.Config()
-    for alias in cfg.aliases:
+    cfg = soap.ConfigModel.from_file_tree()
+    for alias_name, alias in cfg.aliases.items():
 
         @app.command(
-            alias.name,
+            alias_name,
             help=alias.description,
             context_settings={
                 "allow_extra_args": alias.passthrough_args,
@@ -109,14 +109,14 @@ def update(
     """
     Update Conda environments.
     """
-    cfg = soap.Config()
-    envs = cfg.envs.values() if env is None else [cfg.envs[env]]
+    cfg = soap.ConfigModel.from_file_tree()
+    envs = cfg.envs.items() if env is None else [(env, cfg.envs[env])]
     CONSOLE.print(
         f"[cyan]Updating {len(envs)} environment{'s' if len(envs) != 1 else ''}"
     )
-    for this_env in envs:
+    for env_name, this_env in envs:
         CONSOLE.print(
-            f"[cyan]Preparing environment '{this_env.name}' "
+            f"[cyan]Preparing environment '{env_name}' "
             + f"from '{this_env.yml_path}' "
             + f"in '{this_env.env_path}'"
         )
@@ -132,7 +132,7 @@ def run(
     env: str = Option(DEFAULT_ENV, help="Environment in which to run the command"),
 ):
     """Run a command in an environment."""
-    cfg = soap.Config()
+    cfg = soap.ConfigModel.from_file_tree()
     this_env = cfg.envs[env]
     soap.prepare_env(this_env)
     try:
@@ -152,7 +152,7 @@ def list(
     )
 ):
     """List the available environments."""
-    cfg = soap.Config()
+    cfg = soap.ConfigModel.from_file_tree()
 
     if verbosity < 3:
         captions = [
@@ -177,8 +177,8 @@ def list(
             table.add_column("🪧")
             table.add_column("📥")
 
-        for env in cfg.envs.values():
-            row = [env.name, str(env.yml_path)]
+        for env_name, env in cfg.envs.items():
+            row = [env_name, str(env.yml_path)]
             if verbosity > 0:
                 row.append("✓" if env.install_current else "")
             if verbosity > 1:
@@ -191,8 +191,8 @@ def list(
     else:
         tree = rich.tree.Tree("[i]Snakes on a Plane environments", guide_style="dim")
 
-        for env in cfg.envs.values():
-            branch = tree.add(f"[cyan bold]{env.name}")
+        for env_name, env in cfg.envs.items():
+            branch = tree.add(f"[cyan bold]{env_name}")
             yml_branch = branch.add(f"[b]YAML path:[/b] {env.yml_path}")
             branch.add(f"[b]Environment path:[/b] {env.env_path}")
             environment_exists = (
@@ -211,7 +211,7 @@ def list(
                 yml_branch.add(syntax)
             if verbosity > 4:
                 branch.add(
-                    f"[b]Command to update environment:[/b] [u]soap update --env {env.name}"
+                    f"[b]Command to update environment:[/b] [u]soap update --env {env_name}"
                 )
                 branch.add(
                     f"[b]Command to recreate environment:[/b] [u]soap update --recreate --env {env.name}"

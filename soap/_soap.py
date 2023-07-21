@@ -7,7 +7,7 @@ import filecmp
 import yaml
 
 import soap.conda
-from soap.config import Env
+from soap.config import EnvModel
 from soap.utils import yaml_file_to_dict, dict_to_yaml_str
 
 
@@ -33,7 +33,7 @@ def add_pip_package(
         dependencies.append({"pip": [package]})
 
 
-def prepare_env_file(env: Env) -> str:
+def prepare_env_file(env: EnvModel) -> str:
     """
     Prepare an environment YAML file and return its contents
 
@@ -56,7 +56,7 @@ def prepare_env_file(env: Env) -> str:
     # Add the current package, in dev mode, if required
     if env.install_current:
         add_pip_package(
-            f"-e {env.package_root}[all]",
+            f"-e {env._package_root}[all]",
             env_dict["dependencies"],
         )
 
@@ -64,7 +64,7 @@ def prepare_env_file(env: Env) -> str:
 
 
 def prepare_env(
-    env: Env,
+    env: EnvModel,
     ignore_cache: bool = False,
 ):
     """
@@ -122,7 +122,7 @@ def prepare_env(
         working_yaml_path.unlink()
 
 
-def run_in_env(args: Sequence[str], env: Env):
+def run_in_env(args: Sequence[str], env: EnvModel):
     """
     Run a command in the provided environment. Does not update the environment.
 
