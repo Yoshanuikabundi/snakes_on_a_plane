@@ -78,20 +78,18 @@ MAXIMALIST_VALIDATED = {
 def test_maximalist_toml():
     """Check that a maximalist toml file validates correctly."""
     data = toml.load("soap/tests/data/maximalist.toml")
-    validated = cfg.CFG_SCHEMA.validate(data)
-    assert validated == MAXIMALIST_VALIDATED
+    validated = cfg.ConfigModel.model_validate(data)
+    assert validated.model_dump() == MAXIMALIST_VALIDATED
 
 
 def test_maximalist_cfg():
     root_dir = Path("/home/someone/project")
 
     config_dict: Any = deepcopy(MAXIMALIST_VALIDATED)
-    config_dict[cfg.ROOT_DIR_KEY] = root_dir
-    config = cfg.Config(cfg=config_dict)
+    config = cfg.ConfigModel.model_validate(config_dict, context={"root_dir": root_dir})
 
     assert config.envs["test"].env_path == root_dir / ".soap/test"
     assert config.envs["docs"].env_path == root_dir / ".soap/docs"
     assert config.envs["user"].env_path == Path("/home/someone/conda/envs/soap-env")
 
-    alias_dict = {alias.name: alias for alias in config.aliases}
-    assert alias_dict["docs"].chdir == root_dir
+    assert config.aliases["docs"].chdir == root_dir
