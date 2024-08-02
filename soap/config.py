@@ -205,8 +205,7 @@ def _get_cfg_map(leaf_path: Union[None, Path] = None) -> Dict[str, Any]:
     # Load the data from all config files and combine them
     data = _combine_cfg_maps([toml.load(path) for path in soaptoml_paths])
     if pyproject_path:
-        pyproject_data = toml.load(pyproject_path)
-        pyproject_data.get("tool", {}).get("soap", {})
+        pyproject_data = toml.load(pyproject_path).get("tool", {}).get("soap", {})
         data = _combine_cfg_maps([data, pyproject_data])
 
     # Validate against the schema
@@ -220,12 +219,14 @@ def _get_cfg_map(leaf_path: Union[None, Path] = None) -> Dict[str, Any]:
     return data
 
 
-def _combine_cfg_maps(data: List[Dict[str, None]]):
+def _combine_cfg_maps(data: List[Dict[str, None]]) -> Dict[str, None]:
     """Combine a list of toml data files into one
 
-    At the moment this just returns the first dictionary."""
+    At the moment this just returns the first nonempty dictionary."""
     # TODO: Combine multiple dictionaries
-    return data[0]
+    for d in data:
+        if d:
+            return d
 
 
 class Config:
