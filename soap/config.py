@@ -227,6 +227,7 @@ def _combine_cfg_maps(data: List[Dict[str, None]]) -> Dict[str, None]:
     for d in data:
         if d:
             return d
+    return {}
 
 
 class Config:
